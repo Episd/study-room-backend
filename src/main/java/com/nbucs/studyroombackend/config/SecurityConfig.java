@@ -29,7 +29,7 @@ public class SecurityConfig {
                 // 授权规则
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 放行预检请求
-                        .requestMatchers("/auth/**").permitAll()               // 登录注册接口放行
+                        .requestMatchers("/api/auth/**").permitAll()               // 登录注册接口放行
                         .anyRequest().authenticated()
                 );
 

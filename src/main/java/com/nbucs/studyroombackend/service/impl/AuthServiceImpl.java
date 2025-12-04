@@ -1,8 +1,7 @@
 package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.nbucs.studyroombackend.entity.Studentuser;
+import com.nbucs.studyroombackend.entity.StudentUser;
 import com.nbucs.studyroombackend.exception.ServiceException;
 import com.nbucs.studyroombackend.mapper.StudentMapper;
 import com.nbucs.studyroombackend.service.AuthService;
@@ -29,13 +28,13 @@ public class AuthServiceImpl implements AuthService {
  * @throws ServiceException 当用户不存在或密码错误时抛出异常
  */
     @Override
-    public Studentuser loginStudentById(Integer Id, String password) {
+    public StudentUser loginStudentById(Integer Id, String password) {
     // 创建查询条件包装器，设置查询用户名等于传入的用户名
-        QueryWrapper<Studentuser> wrapper = new QueryWrapper<>();
+        QueryWrapper<StudentUser> wrapper = new QueryWrapper<>();
         wrapper.eq("studentID", Id);
 
     // 根据条件查询学生用户信息
-        Studentuser studentUser = studentMapper.selectOne(wrapper);
+        StudentUser studentUser = studentMapper.selectOne(wrapper);
 
         // 用户不存在 → 400
         if (studentUser == null) {
@@ -53,11 +52,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Studentuser registerStudent(Studentuser student) {
-        QueryWrapper<Studentuser> wrapper = new QueryWrapper<>();
+    public StudentUser registerStudent(StudentUser student) {
+        QueryWrapper<StudentUser> wrapper = new QueryWrapper<>();
         wrapper.eq("studentId", student.getStudentId());
 
-        Studentuser existUser = studentMapper.selectOne(wrapper);
+        StudentUser existUser = studentMapper.selectOne(wrapper);
 
         if (existUser != null) {
             throw new ServiceException(409, "用户已注册");
@@ -73,19 +72,22 @@ public class AuthServiceImpl implements AuthService {
 /**
  * 重置学生密码方法
  * @param id 学生ID
+ * @param phone 学生电话号码
  * @param password 新密码
  * @return boolean 更新是否成功
  */
-    public boolean resetPassword(Integer id, String password) {
+    @Override
+    public boolean resetPassword(Integer id, String phone, String password) {
     // 创建查询条件包装器，设置查询条件为学生ID等于传入的Id
-        QueryWrapper<Studentuser> wrapper = new QueryWrapper<>();
+        QueryWrapper<StudentUser> wrapper = new QueryWrapper<>();
         wrapper.eq("studentId", id);
+        wrapper.eq("studentPhone", phone);
 
     // 根据条件查询学生用户信息
-        Studentuser studentUser = studentMapper.selectOne(wrapper);
+        StudentUser studentUser = studentMapper.selectOne(wrapper);
     // 如果查询结果为空，则抛出用户不存在的异常
         if (studentUser == null) {
-            throw new ServiceException(400, "用户不存在");
+            throw new ServiceException(400, "用户不存在或电话号码错误");
         }
 
     // 对新密码进行加密编码

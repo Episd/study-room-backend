@@ -1,6 +1,7 @@
 package com.nbucs.studyroombackend.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -10,8 +11,16 @@ import lombok.Data;
 public class Seat {
     @TableId(value = "seatID", type = IdType.INPUT)
     private String seatId;
+
+    @TableField("seatLocation")
     private String seatLocation;
+
+    @TableField("seatType")
     private Integer seatType;
+
+    @TableField("seatStatus")
     private Integer seatStatus;
+
+    @TableField("seatBelonging")
     private String seatBelonging;
 }

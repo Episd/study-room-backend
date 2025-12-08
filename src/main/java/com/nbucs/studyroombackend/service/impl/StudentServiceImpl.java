@@ -1,6 +1,6 @@
 package com.nbucs.studyroombackend.service.impl;
 
-import com.nbucs.studyroombackend.entity.Studentuser;
+import com.nbucs.studyroombackend.entity.StudentUser;
 import com.nbucs.studyroombackend.mapper.StudentMapper;
 import com.nbucs.studyroombackend.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +11,12 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     private StudentMapper studentMapper;
     @Override
-    public Studentuser checkSelfInformation(Studentuser student) {
+    public StudentUser checkSelfInformation(StudentUser student) {
         return studentMapper.selectById(student.getStudentId());
     }
 
     @Override
-    public boolean modifySelfInformation(Studentuser student) {
+    public boolean modifySelfInformation(StudentUser student) {
         return false;
     }
 }

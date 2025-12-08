@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @TableName("studentuser")
-public class Studentuser {
+public class StudentUser {
     private Integer studentId;
     private String studentName;
     private String studentPassword;

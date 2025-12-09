@@ -1,7 +1,7 @@
 package com.nbucs.studyroombackend.controller;
 
 import com.nbucs.studyroombackend.dto.request.AuthDto;
-import com.nbucs.studyroombackend.dto.Response;
+import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.StudentUser;
 import com.nbucs.studyroombackend.service.AuthService;
 import com.nbucs.studyroombackend.util.JwUtil;

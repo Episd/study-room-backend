@@ -40,7 +40,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
 
         // 3. 设置预约信息
-        reservationRecord.setReservationId(generateReservationId());
+//        reservationRecord.setReservationRecordId(generateReservationId());
         reservationRecord.setReservationRecordStatus(1); // 自动审批
         reservationRecord.setCancelPermission(1); // 可取消
         reservationRecord.setCreateTime(LocalDateTime.now());
@@ -61,7 +61,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
             throw new RuntimeException("该时间段已被预约");
         }
 
-        reservationRecord.setReservationId(generateReservationId());
+//        reservationRecord.setReservationRecordId(generateReservationId());
         reservationRecord.setReservationRecordStatus(1); // 自动审批
         reservationRecord.setCancelPermission(1); // 可取消
         reservationRecord.setCreateTime(LocalDateTime.now());
@@ -103,8 +103,8 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 );
 
         // 排除自身
-        if (reservationRecord.getReservationId() != null) {
-            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationId());
+        if (reservationRecord.getReservationRecordId() != null) {
+            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordId());
         }
 
         long conflictCount = reservationRecordMapper.selectCount(queryWrapper);
@@ -138,8 +138,8 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 );
 
         // 排除自身（如果是更新操作）
-        if (reservationRecord.getReservationId() != null) {
-            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationId());
+        if (reservationRecord.getReservationRecordId() != null) {
+            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordId());
         }
 
         long conflictCount = reservationRecordMapper.selectCount(queryWrapper);
@@ -217,7 +217,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 .collect(Collectors.toList());
     }
 
-    private String generateReservationId() {
-        return "RES" + System.currentTimeMillis() + (int)(Math.random() * 1000);
-    }
+//    private String generateReservationId() {
+//        return "RES" + System.currentTimeMillis() + (int)(Math.random() * 1000);
+//    }
 }

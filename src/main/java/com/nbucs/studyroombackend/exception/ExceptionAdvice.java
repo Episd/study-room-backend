@@ -1,6 +1,6 @@
 package com.nbucs.studyroombackend.exception;
 
-import com.nbucs.studyroombackend.dto.Response;
+import com.nbucs.studyroombackend.dto.response.Response;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 

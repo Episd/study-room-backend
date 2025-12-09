@@ -1,11 +1,13 @@
 package com.nbucs.studyroombackend.controller;
 
-import com.nbucs.studyroombackend.dto.Response;
+import com.nbucs.studyroombackend.dto.request.ReserveSeatFormDto;
+import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -15,9 +17,19 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
-    @PostMapping("/seat")
-    public Response<?> reserveSeat(@RequestBody ReservationRecord reservationRecord) {
+    @PostMapping("/reserveSeat")
+    public Response<?> reserveSeat(@RequestBody ReserveSeatFormDto reserveSeatFormDto) {
+        System.out.println("预约请求已到达--学生ID：" + reserveSeatFormDto.getStudyRoomId() + "房间ID" + reserveSeatFormDto.getStudyRoomId() + "座位ID：" + reserveSeatFormDto.getSeatId());
         try {
+            ReservationRecord reservationRecord = new ReservationRecord();
+            reservationRecord.setStudentId(reserveSeatFormDto.getStudentId());
+            reservationRecord.setStudyRoomId(reserveSeatFormDto.getStudyRoomId());
+            reservationRecord.setSeatId(reserveSeatFormDto.getSeatId());
+            reservationRecord.setReservationStartTime(reserveSeatFormDto.getStartTime());
+            reservationRecord.setReservationEndTime(reserveSeatFormDto.getEndTime());
+            reservationRecord.setReservationRecordStatus(0);
+            reservationRecord.setCancelPermission(1);
+            reservationRecord.setCreateTime(LocalDateTime.now());
             ReservationRecord record = reservationService.reserveSeat(reservationRecord);
             return Response.success("座位预约成功", record);
         } catch (Exception e) {

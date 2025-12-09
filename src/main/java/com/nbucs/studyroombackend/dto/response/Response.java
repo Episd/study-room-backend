@@ -1,4 +1,4 @@
-package com.nbucs.studyroombackend.dto;
+package com.nbucs.studyroombackend.dto.response;
 
 import lombok.Data;
 
@@ -17,7 +17,7 @@ public class Response<T> {
     }
 
     public static <T> Response<T> success(String message, T data) {
-        return new Response<>(200, "success", data);
+        return new Response<>(200, message, data);
     }
 
     public static <T> Response<T> fail(Integer code, String message) {

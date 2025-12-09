@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 放行预检请求
                         .requestMatchers("/api/auth/**").permitAll()               // 登录注册接口放行
+                        .requestMatchers("/api/reservation/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

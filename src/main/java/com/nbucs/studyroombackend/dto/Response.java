@@ -16,7 +16,7 @@ public class Response<T> {
         this.data = data;
     }
 
-    public static <T> Response<T> success(T data) {
+    public static <T> Response<T> success(String message, T data) {
         return new Response<>(200, "success", data);
     }
 

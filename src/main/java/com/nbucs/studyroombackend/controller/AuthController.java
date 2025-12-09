@@ -33,7 +33,7 @@ public class AuthController {
        Map<String, Object> data = new HashMap<>();
        data.put("token", token);
        data.put("user", studentUser);
-       return Response.success(data);
+       return Response.success("登录成功", data);
     }
 
     @PostMapping("/registerStudent")
@@ -58,7 +58,7 @@ public class AuthController {
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", studentUser);
-        return Response.success(data);
+        return Response.success("注册成功", data);
     }
 
     @PostMapping("/resetStudentPassword")
@@ -71,6 +71,6 @@ public class AuthController {
 
         authService.resetPassword(id, phone, password);
 
-        return Response.success(null);
+        return Response.success("重置密码成功", null);
     }
 }

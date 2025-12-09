@@ -1,61 +1,24 @@
 package com.nbucs.studyroombackend.entity;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
+@Data
 public class AttendanceRecord {
     /** 考勤编号，主键 */
     private String attendanceRecordId;
-
     /** 学号 */
     private int studentId;
-
     /** 签到时间 */
     private LocalDateTime checkInTime;
-
     /** 签退时间 */
     private LocalDateTime signOutTime;
-
     /** 暂离总时长，单位：分钟 */
     private Integer awayDuration;
-
-    // ===== getter / setter =====
-
-    public String getAttendanceRecordId() {
-        return attendanceRecordId;
-    }
-
-    public void setAttendanceRecordId(String attendanceRecordId) {
-        this.attendanceRecordId = attendanceRecordId;
-    }
-
-    public Integer getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(Integer studentId) {
-        this.studentId = studentId;
-    }
-
-    public LocalDateTime getCheckInTime() {
-        return checkInTime;
-    }
-
-    public void setCheckInTime(LocalDateTime checkInTime) {
-        this.checkInTime = checkInTime;
-    }
-
-    public LocalDateTime getSignOutTime() {
-        return signOutTime;
-    }
-
-    public void setSignOutTime(LocalDateTime signOutTime) {
-        this.signOutTime = signOutTime;
-    }
-
-    public Integer getAwayDuration() {
-        return awayDuration;
-    }
-
-    public void setAwayDuration(Integer awayDuration) {
-        this.awayDuration = awayDuration;
-    }
+    private Integer actualStudyDuration;
+    private String reservationRecordId;
+    private String seatId;
+    private String seminarRoomId;
+    // 1-正常 2-早退 3-超时 4-异常
+    private Integer attendanceStatus;
 }

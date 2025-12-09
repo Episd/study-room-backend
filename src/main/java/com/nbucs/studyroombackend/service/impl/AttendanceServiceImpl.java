@@ -7,6 +7,7 @@ import com.nbucs.studyroombackend.entity.Seat;
 import com.nbucs.studyroombackend.mapper.AttendanceRecordMapper;
 import com.nbucs.studyroombackend.service.AttendanceService;
 import com.nbucs.studyroombackend.service.SeatService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +17,9 @@ import java.util.UUID;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
-
+    @Autowired
     private final AttendanceRecordMapper attendanceRecordMapper;
+    @Autowired
     private final SeatService seatService;
 
     public AttendanceServiceImpl(AttendanceRecordMapper attendanceRecordMapper,
@@ -58,66 +60,60 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional
     public boolean checkOut(AttendanceRequest request) {
         // 查出今天该学生最近一次考勤记录
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
-
-        AttendanceRecord record = attendanceRecordMapper
-                .selectLatestByStudentAndDay(request.getStudentId(), start, end);
-
-        if (record == null || record.getSignOutTime() != null) {
-            // 没有有效的“已签到未签退”记录
-            return false;
-        }
-
-        // 更新签退时间
-        LocalDateTime signOutTime =
-                request.getOperateTime() != null ? request.getOperateTime() : LocalDateTime.now();
-        record.setSignOutTime(signOutTime);
-        attendanceRecordMapper.updateById(record);
-
-        // 座位恢复为“可预约”
-        if (request.getSeatId() != null) {
-            Seat seat = seatService.checkSeatInformation(request.getSeatId());
-            // 假设 0 = 可预约
-            seat.setSeatStatus(0);
-            seatService.updateSeatStatus(seat);
-        }
-
-        // TODO：记录日志“签退”
-
+//        LocalDate today = LocalDate.now();
+//        LocalDateTime start = today.atStartOfDay();
+//        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
+//
+//        AttendanceRecord record = attendanceRecordMapper
+//                .selectLatestByStudentAndDay(request.getStudentId(), start, end);
+//
+//        if (record == null || record.getSignOutTime() != null) {
+//            // 没有有效的“已签到未签退”记录
+//            return false;
+//        }
+//
+//        // 更新签退时间
+//        LocalDateTime signOutTime =
+//                request.getOperateTime() != null ? request.getOperateTime() : LocalDateTime.now();
+//        record.setSignOutTime(signOutTime);
+//        attendanceRecordMapper.updateById(record);
+//
+//        // 座位恢复为“可预约”
+//        if (request.getSeatId() != null) {
+//            Seat seat = seatService.checkSeatInformation(request.getSeatId());
+//            // 假设 0 = 可预约
+//            seat.setSeatStatus(0);
+//            seatService.updateSeatStatus(seat);
+//        }
         return true;
     }
 
     @Override
     @Transactional
     public boolean leaveTemporarily(AttendanceRequest request) {
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
-
-        AttendanceRecord record = attendanceRecordMapper
-                .selectLatestByStudentAndDay(request.getStudentId(), start, end);
-
-        if (record == null) {
-            return false;
-        }
-
-        // 累加暂离时长
-        Integer old = record.getAwayDuration() == null ? 0 : record.getAwayDuration();
-        Integer add = request.getDurationMinutes() == null ? 0 : request.getDurationMinutes();
-        record.setAwayDuration(old + add);
-        attendanceRecordMapper.updateById(record);
-
-        // 座位状态改为“暂离”
-        if (request.getSeatId() != null) {
-            Seat seat = seatService.checkSeatInformation(request.getSeatId());
-            seat.setSeatStatus(4);
-            seatService.updateSeatStatus(seat);
-        }
-
-        // TODO：记录日志“暂离”
-
+//        LocalDate today = LocalDate.now();
+//        LocalDateTime start = today.atStartOfDay();
+//        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
+//
+//        AttendanceRecord record = attendanceRecordMapper
+//                .selectLatestByStudentAndDay(request.getStudentId(), start, end);
+//
+//        if (record == null) {
+//            return false;
+//        }
+//
+//        // 累加暂离时长
+//        Integer old = record.getAwayDuration() == null ? 0 : record.getAwayDuration();
+//        Integer add = request.getDurationMinutes() == null ? 0 : request.getDurationMinutes();
+//        record.setAwayDuration(old + add);
+//        attendanceRecordMapper.updateById(record);
+//
+//        // 座位状态改为“暂离”
+//        if (request.getSeatId() != null) {
+//            Seat seat = seatService.checkSeatInformation(request.getSeatId());
+//            seat.setSeatStatus(4);
+//            seatService.updateSeatStatus(seat);
+//        }
         return true;
     }
 

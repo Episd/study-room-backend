@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -123,8 +124,8 @@ public class SeatServiceImpl implements SeatService {
 
         // 检查座位是否被占用（除了空闲和维修中状态）
         Seat seat = seatMapper.selectById(seatId);
-        if (seat != null && seat.getSeatStatus() != STATUS_AVAILABLE &&
-                seat.getSeatStatus() != STATUS_MAINTENANCE) {
+        if (seat != null && !Objects.equals(seat.getSeatStatus(), STATUS_AVAILABLE) &&
+                !Objects.equals(seat.getSeatStatus(), STATUS_MAINTENANCE)) {
             throw new RuntimeException("座位当前被占用，无法删除");
         }
 
@@ -211,7 +212,7 @@ public class SeatServiceImpl implements SeatService {
         }
 
         // 只有状态为0（可预约）的座位才可用
-        return seat.getSeatStatus() == STATUS_AVAILABLE;
+        return Objects.equals(seat.getSeatStatus(), STATUS_AVAILABLE);
     }
 
     @Override

@@ -1,5 +1,8 @@
 package com.nbucs.studyroombackend.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalTime;
@@ -9,8 +12,10 @@ import java.time.LocalTime;
  * 使用@Data注解自动生成getter、setter、equals、hashCode和toString方法
  */
 @Data
+@TableName("studyroom")
 public class StudyRoom {
     // 自习室ID，唯一标识一个自习室
+    @TableId(value = "studyRoomID", type = IdType.INPUT)
     private String studyRoomId;
     // 自习室容量，表示自习室可容纳的总人数
     private Integer studyRoomCapacity;

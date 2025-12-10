@@ -19,7 +19,7 @@ public class ReservationController {
 
     @PostMapping("/reserveSeat")
     public Response<?> reserveSeat(@RequestBody ReserveSeatFormDto reserveSeatFormDto) {
-        System.out.println("预约请求已到达--学生ID：" + reserveSeatFormDto.getStudyRoomId() + "房间ID" + reserveSeatFormDto.getStudyRoomId() + "座位ID：" + reserveSeatFormDto.getSeatId());
+        System.out.println("预约请求已到达--学生ID：" + reserveSeatFormDto.getStudentId() + "房间ID" + reserveSeatFormDto.getStudyRoomId() + "座位ID：" + reserveSeatFormDto.getSeatId());
         try {
             ReservationRecord reservationRecord = new ReservationRecord();
             reservationRecord.setStudentId(reserveSeatFormDto.getStudentId());

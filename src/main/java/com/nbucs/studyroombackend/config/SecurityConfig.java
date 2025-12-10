@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 放行预检请求
                         .requestMatchers("/api/auth/**").permitAll()               // 登录注册接口放行
                         .requestMatchers("/api/reservation/**").permitAll()
+                        .requestMatchers("/api/resourceManage/**").permitAll()
+                        .requestMatchers("/api/seatManage/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

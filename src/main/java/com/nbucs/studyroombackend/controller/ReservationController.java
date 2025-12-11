@@ -1,6 +1,7 @@
 package com.nbucs.studyroombackend.controller;
 
 import com.nbucs.studyroombackend.dto.request.ReserveSeatFormDto;
+import com.nbucs.studyroombackend.dto.response.ReservationInfo;
 import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.service.ReservationService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reservation")
@@ -47,18 +49,27 @@ public class ReservationController {
         }
     }
 
-    @GetMapping("/student/{studentId}")
-    public Response<?> getStudentReservations(@PathVariable Integer studentId) {
+    @GetMapping("/getReservation")
+    public Response<?> getStudentReservations(@RequestParam Integer studentId) {
+        System.out.println("查询预约请求：学生ID：" + studentId);
         try {
             List<ReservationRecord> records = reservationService.checkReservationRecord(studentId);
-            return Response.success("查询成功", records);
+
+            List<ReservationInfo> dtoList = records.stream().map(record -> {
+                ReservationInfo info = new ReservationInfo();
+                info.transformToDto(record);
+                return info;
+            }).collect(Collectors.toList());
+
+            return Response.success("查询成功", dtoList);
         } catch (Exception e) {
             return Response.error(304, "查询失败: " + e.getMessage());
         }
     }
 
-    @PutMapping("/cancel/{reservationId}")
-    public Response<?> cancelReservation(@PathVariable String reservationId) {
+    @PostMapping("/cancelReservation")
+    public Response<?> cancelReservation(@RequestParam String reservationId) {
+        System.out.println("取消预约请求：预约ID：" + reservationId);
         try {
             boolean result = reservationService.cancelReservation(reservationId);
             return result ? Response.success("取消成功", null) : Response.error(304, "取消失败");

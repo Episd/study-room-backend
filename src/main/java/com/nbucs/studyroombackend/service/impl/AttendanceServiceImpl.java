@@ -35,9 +35,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // 2. 更新座位状态为“已占用”
         if (request.getSeatId() != null) {
-            Seat seat = seatService.checkSeatInformation(request.getSeatId());
+            Seat seat = seatService.getSeatById(request.getSeatId());
             seat.setSeatStatus(3);
-            seatService.updateSeatStatus(seat);
+            seatService.updateSeatStatus(seat.getSeatId(),seat.getSeatStatus());
         }
 
         // 3. 新建考勤记录

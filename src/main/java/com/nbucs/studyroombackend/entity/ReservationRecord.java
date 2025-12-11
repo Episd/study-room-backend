@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @TableName("reservationrecord")
 public class ReservationRecord {
 
-    @TableId(type = IdType.ASSIGN_UUID)  // 自动生成 UUID
+    @TableId(value = "reservationRecordID", type = IdType.INPUT)// 自动生成 UUID
     private String reservationRecordId;
 
     @TableField("studentID")

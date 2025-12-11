@@ -1,7 +1,7 @@
 package com.nbucs.studyroombackend.servicetest;
 
 
-import com.nbucs.studyroombackend.dto.AttendanceRequest;
+import com.nbucs.studyroombackend.dto.request.AttendanceRequest;
 import com.nbucs.studyroombackend.entity.AttendanceRecord;
 import com.nbucs.studyroombackend.entity.Seat;
 import com.nbucs.studyroombackend.mapper.AttendanceRecordMapper;

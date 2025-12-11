@@ -1,6 +1,6 @@
 package com.nbucs.studyroombackend.controller;
 
-import com.nbucs.studyroombackend.dto.AttendanceRequest;
+import com.nbucs.studyroombackend.dto.request.AttendanceRequest;
 import com.nbucs.studyroombackend.entity.AttendanceRecord;
 import com.nbucs.studyroombackend.service.AttendanceService;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +22,7 @@ public class AttendanceController {
      */
     @PostMapping("/check-in")
     public AttendanceRecord checkIn(@RequestBody AttendanceRequest request) {
-        return attendanceService.checkIn(request);
+        return null;
     }
 
     /**

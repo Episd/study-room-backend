@@ -37,7 +37,7 @@ public class AttendanceController {
      * 签退
      */
     @PutMapping("/check-out/{recordId}")
-    public Response<AttendanceRecord> checkOut(@PathVariable String recordId) {
+    public Response<AttendanceRecord> checkOut(@PathVariable Long recordId) {
         System.out.print("收到签退请求：预约ID：" + recordId);
         AttendanceRecord attendanceRecord = new AttendanceRecord();
         attendanceRecord.setAttendanceRecordId(recordId);
@@ -48,8 +48,10 @@ public class AttendanceController {
      * 暂离
      */
     @PutMapping("/temporary-leave/{recordId}")
-    public boolean leaveTemporarily(@PathVariable String recordId) {
-
-        return attendanceService.leaveTemporarily(new AttendanceRequest());
+    public Response<?> leaveTemporarily(@PathVariable Long recordId) {
+        AttendanceRequest request = new AttendanceRequest();
+        request.setRecordId(recordId);
+        attendanceService.leaveTemporarily(request);
+        return Response.success("暂离成功!", null);
     }
 }

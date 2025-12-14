@@ -120,7 +120,43 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public boolean leaveTemporarily(AttendanceRequest request) {
+        System.out.println("进行临时离开服务中：考勤记录Id：" + request.getRecordId());
+        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
+        attendanceRecord.setAwayStartTime(LocalDateTime.now());
+        attendanceRecordMapper.updateById(attendanceRecord);
+        return true;
+    }
 
+    @Override
+    @Transactional
+    public boolean returnFromTemporarily(AttendanceRequest request) {
+        System.out.println("进行返回暂离服务中：考勤记录Id：" + request.getRecordId());
+        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
+        if (attendanceRecord == null) {
+            throw new ServiceException(404, "考勤记录不存在，recordId=" + request.getRecordId());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime awayStart = attendanceRecord.getAwayStartTime();
+
+        if (awayStart != null) {
+            // 计算本次暂离时长
+            int duration = Math.toIntExact(Duration.between(awayStart, now).toMinutes());
+
+            // 累加到 awayDuration
+            Integer currentDuration = attendanceRecord.getAwayDuration();
+            if (currentDuration == null) {
+                currentDuration = 0;
+            }
+            attendanceRecord.setAwayDuration((int) (currentDuration + duration));
+
+            // 清空 awayStartTime，表示已返回
+            attendanceRecord.setAwayStartTime(null);
+        } else {
+            throw new ServiceException(404, "考勤记录未记录暂离时间，无法返回");
+        }
+
+        attendanceRecordMapper.updateById(attendanceRecord);
         return true;
     }
 }

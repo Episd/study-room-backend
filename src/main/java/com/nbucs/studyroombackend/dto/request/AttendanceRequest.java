@@ -9,4 +9,5 @@ public class AttendanceRequest {
     private int studentId;
     private String roomId;
     private String seatNumber;
+    private Long recordId;
 }

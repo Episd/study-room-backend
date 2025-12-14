@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +41,10 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
             throw new RuntimeException("座位不存在");
         }
 
+        // 3. 生成预约记录ID
+        String reservationId = generateReservationId();
+        reservationRecord.setReservationRecordId(reservationId);
+
         // 3. 设置预约信息
 //        reservationRecord.setReservationRecordId(generateReservationId());
         reservationRecord.setReservationRecordStatus(1); // 自动审批
@@ -60,6 +66,10 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         if (checkTimeConflict(reservationRecord)) {
             throw new RuntimeException("该时间段已被预约");
         }
+
+        // 3. 生成预约记录ID
+        String reservationId = generateReservationId();
+        reservationRecord.setReservationRecordId(reservationId);
 
 //        reservationRecord.setReservationRecordId(generateReservationId());
         reservationRecord.setReservationRecordStatus(1); // 自动审批
@@ -146,6 +156,54 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         return conflictCount > 0;
     }
 
+    /**
+     * 生成预约记录ID - 改进版
+     * 避免并发问题，确保序号不重复
+     */
+    private String generateReservationId() {
+        // 获取当前日期
+        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        // 查询今天最大的序号
+        Integer maxSequence = getTodayMaxSequence(dateStr);
+
+        // 生成新序号
+        int newSequence = (maxSequence == null ? 0 : maxSequence) + 1;
+
+        // 格式化序号为4位数字
+        String sequenceStr = String.format("%04d", newSequence);
+
+        return "RR" + dateStr + sequenceStr;
+    }
+
+    /**
+     * 获取今天最大的序号
+     */
+    private Integer getTodayMaxSequence(String dateStr) {
+        // 查询今天所有ID
+        List<String> todayIds = reservationRecordMapper.selectTodayReservationIds(dateStr);
+
+        if (todayIds == null || todayIds.isEmpty()) {
+            return null;
+        }
+
+        // 提取并找到最大序号
+        return todayIds.stream()
+                .map(id -> {
+                    // 从ID中提取序号部分（最后4位）
+                    if (id != null && id.length() >= 4) {
+                        try {
+                            return Integer.parseInt(id.substring(id.length() - 4));
+                        } catch (NumberFormatException e) {
+                            return 0;
+                        }
+                    }
+                    return 0;
+                })
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
     @Override
     public boolean acceptReservation(String reservationRecordId) {
         ReservationRecord record = reservationRecordMapper.selectById(reservationRecordId);
@@ -217,7 +275,4 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 .collect(Collectors.toList());
     }
 
-//    private String generateReservationId() {
-//        return "RES" + System.currentTimeMillis() + (int)(Math.random() * 1000);
-//    }
 }

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class AttendanceRequest {
     private int studentId;
-    private String studyRoomId;
-    private String seatId;
+    private String roomId;
+    private String seatNumber;
+    private Long recordId;
 }

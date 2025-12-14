@@ -4,7 +4,10 @@ import com.nbucs.studyroombackend.dto.request.AttendanceRequest;
 import com.nbucs.studyroombackend.entity.AttendanceRecord;
 
 public interface AttendanceService {
-    boolean checkIn(AttendanceRequest request);
-    boolean checkOut(AttendanceRequest request);
+    AttendanceRecord checkIn(AttendanceRequest request);
+    AttendanceRecord checkOut(AttendanceRecord record);
     boolean leaveTemporarily(AttendanceRequest request);
+    boolean returnFromTemporarily(AttendanceRequest request);
+    AttendanceRecord getAttendanceRecordByStudentId(AttendanceRequest request);
+    AttendanceRecord getTodayCompletedAttendanceRecords(AttendanceRequest request);
 }

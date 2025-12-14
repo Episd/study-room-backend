@@ -1,5 +1,6 @@
 package com.nbucs.studyroombackend.controller;
 
+import com.nbucs.studyroombackend.dto.request.OccupiedTimeSlotQueryDto;
 import com.nbucs.studyroombackend.dto.request.ReserveSeatFormDto;
 import com.nbucs.studyroombackend.dto.response.ReservationInfo;
 import com.nbucs.studyroombackend.dto.response.Response;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,5 +106,31 @@ public class ReservationController {
         }
     }
 
+    @PostMapping("/occupied-time-slots")
+    public Response<?> getOccupiedTimeSlots(@RequestBody OccupiedTimeSlotQueryDto queryDto) {
+        System.out.println("查询占用时间段：" + queryDto);
+
+        try {
+            // 基本参数验证
+            if (queryDto.getQueryDate() == null) {
+                return Response.error(400, "查询日期不能为空");
+            }
+
+            // 调用Service查询
+            List<ReservationRecord> records = reservationService.getOccupiedTimeSlots(queryDto);
+
+            if (records == null || records.isEmpty()) {
+                return Response.success("该日期没有占用时间段", Collections.emptyList());
+            }
+
+            return Response.success("查询成功", records);
+
+        } catch (IllegalArgumentException e) {
+            return Response.error(400, e.getMessage());
+        } catch (Exception e) {
+            System.err.println("查询失败: " + e.getMessage());
+            return Response.error(500, "查询失败");
+        }
+    }
 
 }

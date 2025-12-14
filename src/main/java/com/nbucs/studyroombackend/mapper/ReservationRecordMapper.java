@@ -5,6 +5,8 @@ import com.nbucs.studyroombackend.entity.ReservationRecord;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservationRecordMapper extends BaseMapper<ReservationRecord> {
@@ -35,4 +37,5 @@ public interface ReservationRecordMapper extends BaseMapper<ReservationRecord> {
             "ORDER BY reservationStartTime ASC " +
             "LIMIT 1")
     ReservationRecord selectEarliestTodayReservation(@Param("studentId") String studentId);
+
 }

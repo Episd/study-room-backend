@@ -1,6 +1,8 @@
 package com.nbucs.studyroombackend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.nbucs.studyroombackend.dto.request.OccupiedTimeSlotQueryDto;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.entity.Seat;
 import com.nbucs.studyroombackend.mapper.ReservationRecordMapper;
@@ -14,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static com.baomidou.mybatisplus.extension.ddl.DdlScriptErrorHandler.PrintlnLogErrorHandler.log;
 
 @Service
 @Transactional
@@ -263,32 +265,92 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
     }
 
-    // 查询指定座位在某个时间段的可用性
-    public boolean isSeatAvailable(String seatId, LocalDateTime startTime, LocalDateTime endTime) {
-        QueryWrapper<ReservationRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("seatID", seatId)
-                .in("reservationRecordStatus", Arrays.asList(0, 1, 2)) // 有效的预约状态
-                .and(wrapper ->
-                        wrapper.lt("reservationStartTime", endTime)
-                                .gt("reservationEndTime", startTime)
-                );
-
-        return reservationRecordMapper.selectCount(queryWrapper) == 0;
-    }
-
-    // 查询指定时间段内可用的座位
-    public List<Seat> findAvailableSeats(LocalDateTime startTime, LocalDateTime endTime, String studyRoomId) {
-        // 先找出该自习室的所有座位
-        QueryWrapper<Seat> seatQuery = new QueryWrapper<>();
-        if (studyRoomId != null) {
-            seatQuery.eq("seatBelonging", studyRoomId);
+    @Override
+    public List<ReservationRecord> getOccupiedTimeSlots(OccupiedTimeSlotQueryDto queryDto) {
+        if (queryDto == null || queryDto.getQueryDate() == null) {
+            throw new IllegalArgumentException("查询参数不能为空");
         }
-        List<Seat> allSeats = seatService.getAllSeats();
 
-        // 过滤出在指定时间段内没有被预约的座位
-        return allSeats.stream()
-                .filter(seat -> isSeatAvailable(seat.getSeatId(), startTime, endTime))
-                .collect(Collectors.toList());
+        LocalDate queryDate = queryDto.getQueryDate();
+        LocalDateTime startTime = queryDate.atStartOfDay();
+        LocalDateTime endTime = queryDate.atTime(23, 59, 59);
+
+        System.out.println("=== 查询参数 ===");
+        System.out.println("studyRoomId: " + queryDto.getStudyRoomId());
+        System.out.println("seatId: " + queryDto.getSeatId());
+        System.out.println("seminarRoomId: " + queryDto.getSeminarRoomId());
+        System.out.println("queryDate: " + queryDate);
+        System.out.println("时间范围: " + startTime + " - " + endTime);
+
+        // 使用QueryWrapper构建查询条件
+        QueryWrapper<ReservationRecord> wrapper = new QueryWrapper<>();
+
+        // 日期条件：查询当天的预约
+        wrapper.between("reservationStartTime", startTime, endTime);
+        System.out.println("SQL条件1: reservationStartTime BETWEEN " + startTime + " AND " + endTime);
+
+        // 状态条件：已通过(1)或已开始(2)
+        wrapper.in("reservationRecordStatus", Arrays.asList(1, 2));
+        System.out.println("SQL条件2: reservationRecordStatus IN (1, 2)");
+
+        // 自习室相关条件
+        if (queryDto.getStudyRoomId() != null && !queryDto.getStudyRoomId().trim().isEmpty()) {
+            wrapper.eq("studyRoomID", queryDto.getStudyRoomId());
+            System.out.println("SQL条件3: studyRoomID = " + queryDto.getStudyRoomId());
+
+            if (queryDto.getSeatId() != null && !queryDto.getSeatId().trim().isEmpty()) {
+                wrapper.eq("seatID", queryDto.getSeatId());
+                System.out.println("SQL条件4: seatID = " + queryDto.getSeatId());
+            }
+        }
+
+        // 研讨室条件
+        if (queryDto.getSeminarRoomId() != null && !queryDto.getSeminarRoomId().trim().isEmpty()) {
+            wrapper.eq("seminarRoomID", queryDto.getSeminarRoomId());
+            System.out.println("SQL条件5: seminarRoomID = " + queryDto.getSeminarRoomId());
+        }
+
+        // 排序
+        wrapper.orderByAsc("reservationStartTime");
+
+        // 打印最终SQL（更详细的方法）
+        try {
+            // 获取SQL语句的另一种方式
+            String sql = wrapper.getSqlSegment();
+            System.out.println("SQL片段: " + sql);
+
+            // 打印Wrapper的所有条件
+            System.out.println("Wrapper条件表达式: " + wrapper.getExpression());
+
+            // 打印Wrapper参数
+            System.out.println("Wrapper参数: " + wrapper.getParamNameValuePairs());
+        } catch (Exception e) {
+            System.out.println("获取SQL信息失败: " + e.getMessage());
+        }
+
+        // 执行查询
+        System.out.println("开始执行查询...");
+        List<ReservationRecord> result = reservationRecordMapper.selectList(wrapper);
+
+        System.out.println("查询结果数量: " + result.size());
+        if (!result.isEmpty()) {
+            System.out.println("查询到的记录:");
+            for (int i = 0; i < result.size(); i++) {
+                ReservationRecord record = result.get(i);
+                System.out.println("记录 " + (i+1) + ":");
+                System.out.println("  studyRoomID: " + record.getStudyRoomId());
+                System.out.println("  seatID: " + record.getSeatId());
+                System.out.println("  seminarRoomID: " + record.getSeminarRoomId());
+                System.out.println("  reservationStartTime: " + record.getReservationStartTime());
+                System.out.println("  reservationEndTime: " + record.getReservationEndTime());
+                System.out.println("  reservationRecordStatus: " + record.getReservationRecordStatus());
+                System.out.println("---");
+            }
+        } else {
+            System.out.println("未查询到任何记录");
+        }
+
+        return result;
     }
 
 }

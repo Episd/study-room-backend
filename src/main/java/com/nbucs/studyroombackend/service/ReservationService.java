@@ -1,6 +1,7 @@
 package com.nbucs.studyroombackend.service;
 
 import com.nbucs.studyroombackend.entity.ReservationRecord;
+import com.nbucs.studyroombackend.dto.request.OccupiedTimeSlotQueryDto;
 
 import java.util.List;
 
@@ -55,4 +56,11 @@ public interface ReservationService {
      * @return 返回操作是否成功，true表示有冲突，false表示没有冲突
      */
     boolean checkTimeConflict(ReservationRecord reservationRecord);
+
+    /**
+     * 查询占用时间段
+     * @param queryDto 查询条件
+     * @return 占用时间段的预约记录列表
+     */
+    List<ReservationRecord> getOccupiedTimeSlots(OccupiedTimeSlotQueryDto queryDto);
 }

@@ -8,4 +8,6 @@ public interface AttendanceService {
     AttendanceRecord checkOut(AttendanceRecord record);
     boolean leaveTemporarily(AttendanceRequest request);
     boolean returnFromTemporarily(AttendanceRequest request);
+    AttendanceRecord getAttendanceRecordByStudentId(AttendanceRequest request);
+    AttendanceRecord getTodayCompletedAttendanceRecords(AttendanceRequest request);
 }

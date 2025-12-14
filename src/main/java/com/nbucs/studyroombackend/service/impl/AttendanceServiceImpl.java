@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service.impl;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.nbucs.studyroombackend.dto.request.AttendanceRequest;
 import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.AttendanceRecord;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -90,17 +92,17 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional
     public AttendanceRecord checkOut(AttendanceRecord record) {
         System.out.println("进行签退服务中：签到记录Id：" + record.getAttendanceRecordId());
-
         // 查找签到记录
         AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(record.getAttendanceRecordId());
         if (attendanceRecord == null) {
+            System.out.println("未找到签到记录，无法签退");
             throw new ServiceException(404, "未找到签到记录，无法签退");
         }
 
         // 设置签退时间
         LocalDateTime now = LocalDateTime.now();
         attendanceRecord.setSignOutTime(now);
-
+        System.out.println("1111");
         // 计算实际学习时长（分钟）
         long totalMinutes = Duration.between(attendanceRecord.getCheckInTime(), now).toMinutes();
         int actualStudyDuration = (int) (totalMinutes - (attendanceRecord.getAwayDuration() == null ? 0 : attendanceRecord.getAwayDuration()));
@@ -158,5 +160,33 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendanceRecordMapper.updateById(attendanceRecord);
         return true;
+    }
+
+    @Override
+    @Transactional
+    public AttendanceRecord getAttendanceRecordByStudentId(AttendanceRequest request) {
+        // 根据 studentId 查询正在签到中的考勤记录
+        return attendanceRecordMapper.selectOne(
+                new QueryWrapper<AttendanceRecord>()
+                        .eq("studentID", request.getStudentId())
+                        .eq("attendanceStatus", 1)
+        );
+    }
+
+    @Override
+    @Transactional
+    public AttendanceRecord getTodayCompletedAttendanceRecords(AttendanceRequest request) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        // 查询当天已完成的签到记录
+        return attendanceRecordMapper.selectOne(
+                new QueryWrapper<AttendanceRecord>()
+                        .eq("studentID", request.getStudentId())
+                        .ge("checkInTime", startOfDay)
+                        .lt("signOutTime", endOfDay)
+                        .ne("attendanceStatus", 1)
+        );
     }
 }

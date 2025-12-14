@@ -22,4 +22,17 @@ public interface ReservationRecordMapper extends BaseMapper<ReservationRecord> {
             "FROM reservationrecord " +
             "WHERE reservationRecordID LIKE CONCAT('RR', #{date}, '%')")
     Integer selectTodayMaxSequence(@Param("date") String dateStr);
+
+    /**
+     * 查询学生当天最早的预约记录
+     * @param studentId 学生ID
+     * @return 最早的预约记录
+     */
+    @Select("SELECT * FROM reservationrecord " +
+            "WHERE studentId = #{studentId} " +
+            "AND DATE(reservationStartTime) = CURDATE() " +
+            "AND reservationRecordStatus IN (1, 2) " +  // 1:已通过, 2:已开始
+            "ORDER BY reservationStartTime ASC " +
+            "LIMIT 1")
+    ReservationRecord selectEarliestTodayReservation(@Param("studentId") String studentId);
 }

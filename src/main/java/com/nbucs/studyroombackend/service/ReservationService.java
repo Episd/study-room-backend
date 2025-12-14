@@ -31,6 +31,12 @@ public interface ReservationService {
      */
     List<ReservationRecord> checkReservationRecord(Integer studentId);
     /**
+     * 查询学生当天最早的预约记录
+     * @param studentId 学生ID（字符串类型）
+     * @return 最早的预约记录，如果没有返回null
+     */
+    ReservationRecord getEarliestTodayReservation(String studentId);
+    /**
      * 取消指定的预约
      * @param reservationId 预约记录ID，用于标识需要取消的预约
      * @return 返回操作是否成功，true表示取消成功，false表示取消失败

@@ -1,5 +1,6 @@
 package com.nbucs.studyroombackend.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.entity.Seat;
 import com.nbucs.studyroombackend.mapper.ReservationRecordMapper;
@@ -245,6 +246,21 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         queryWrapper.eq("studentID", studentId)
                 .orderByDesc("reservationStartTime");
         return reservationRecordMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public ReservationRecord getEarliestTodayReservation(String studentId) {
+        // 参数验证
+        if (StringUtils.isBlank(studentId)) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        try {
+            ReservationRecord record = reservationRecordMapper.selectEarliestTodayReservation(studentId);
+            return record;
+        } catch (Exception e) {
+            throw new RuntimeException("查询预约记录失败: " + e.getMessage());
+        }
     }
 
     // 查询指定座位在某个时间段的可用性

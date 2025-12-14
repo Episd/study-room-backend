@@ -67,6 +67,22 @@ public class ReservationController {
         }
     }
 
+    @GetMapping("/earliest-today")
+    public Response<?> getEarliestTodayReservation(@RequestParam String studentId) {
+        System.out.println("查询当天最早预约请求：学生ID：" + studentId);
+        try {
+            ReservationRecord record = reservationService.getEarliestTodayReservation(studentId);
+
+            if (record == null) {
+                return Response.success("当天没有预约记录", null);
+            }
+
+            return Response.success("查询成功", record);
+        } catch (Exception e) {
+            return Response.error(304, "查询失败: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/cancelReservation")
     public Response<?> cancelReservation(@RequestParam String reservationId) {
         System.out.println("取消预约请求：预约ID：" + reservationId);
@@ -87,4 +103,6 @@ public class ReservationController {
             return Response.error(304, e.getMessage());
         }
     }
+
+
 }

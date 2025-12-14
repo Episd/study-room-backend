@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reservation/**").permitAll()
                         .requestMatchers("/api/resourceManage/**").permitAll()
                         .requestMatchers("/api/seatManage/**").permitAll()
+                        .requestMatchers("/api/attendance/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

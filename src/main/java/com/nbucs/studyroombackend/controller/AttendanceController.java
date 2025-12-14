@@ -58,19 +58,22 @@ public class AttendanceController {
     /**
      * 返回暂离
      */
-    @PutMapping("/return/{recordId}")
+    @PutMapping("/cancel-temporary-leave/{recordId}")
     public Response<?> returnFromTemporarily(@PathVariable Long recordId) {
+        System.out.println("收到返回暂离请求：预约ID：" + recordId);
         AttendanceRequest request = new AttendanceRequest();
         request.setRecordId(recordId);
         attendanceService.returnFromTemporarily(request);
+        System.out.println("返回暂离成功！");
         return Response.success("返回暂离成功!", null);
     }
 
     /**
      * 查询正在签到中的考勤记录
      */
-    @GetMapping("/ongoing/{studentId}")
-    public Response<AttendanceResponse> getOngoingAttendance(@PathVariable Integer studentId) {
+    @GetMapping("/current")
+    public Response<AttendanceResponse> getOngoingAttendance(@RequestParam Integer studentId) {
+        System.out.println("接收到查询正在进行的签到记录请求：学生Id：" + studentId);
         AttendanceRequest request = new AttendanceRequest();
         request.setStudentId(studentId);
 

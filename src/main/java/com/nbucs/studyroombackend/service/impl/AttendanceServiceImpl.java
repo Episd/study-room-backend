@@ -68,7 +68,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         record.setStudentId(request.getStudentId());
         record.setSeatId(request.getSeatNumber());
         record.setCheckInTime(LocalDateTime.now());
-        record.setSignOutTime(null);
+        record.setCheckOutTime(null);
         record.setAwayDuration(0);
         record.setActualStudyDuration(0);
 
@@ -101,13 +101,16 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // 设置签退时间
         LocalDateTime now = LocalDateTime.now();
-        attendanceRecord.setSignOutTime(now);
+        attendanceRecord.setCheckOutTime(now);
         System.out.println("1111");
         // 计算实际学习时长（分钟）
         long totalMinutes = Duration.between(attendanceRecord.getCheckInTime(), now).toMinutes();
         int actualStudyDuration = (int) (totalMinutes - (attendanceRecord.getAwayDuration() == null ? 0 : attendanceRecord.getAwayDuration()));
         attendanceRecord.setActualStudyDuration(Math.max(actualStudyDuration, 0));
         System.out.println("实际学习时长：" + actualStudyDuration + "分钟");
+
+        attendanceRecord.setAttendanceStatus(2);
+
         // TODO: 添加违规相关的处理，比如通过签退时间和预约时间比较来判断早退、超时等情况
 
         // 更新数据库
@@ -121,17 +124,17 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public boolean leaveTemporarily(AttendanceRequest request) {
+    public AttendanceRecord leaveTemporarily(AttendanceRequest request) {
         System.out.println("进行临时离开服务中：考勤记录Id：" + request.getRecordId());
         AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
         attendanceRecord.setAwayStartTime(LocalDateTime.now());
         attendanceRecordMapper.updateById(attendanceRecord);
-        return true;
+        return attendanceRecord;
     }
 
     @Override
     @Transactional
-    public boolean returnFromTemporarily(AttendanceRequest request) {
+    public AttendanceRecord returnFromTemporarily(AttendanceRequest request) {
         System.out.println("进行返回暂离服务中：考勤记录Id：" + request.getRecordId());
         AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
         if (attendanceRecord == null) {
@@ -159,7 +162,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         attendanceRecordMapper.updateById(attendanceRecord);
-        return true;
+        return attendanceRecord;
     }
 
     @Override

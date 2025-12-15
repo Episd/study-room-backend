@@ -32,7 +32,7 @@ public class AttendanceResponse {
         response.setStudentId(record.getStudentId());
         response.setRoomId(record.getSeminarRoomId()); // 注意这里对应数据库字段
         response.setCheckInTime(record.getCheckInTime());
-        response.setCheckOutTime(record.getSignOutTime());
+        response.setCheckOutTime(record.getCheckOutTime());
         return response;
     }
 }

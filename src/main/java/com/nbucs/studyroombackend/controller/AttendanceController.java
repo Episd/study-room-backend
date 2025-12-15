@@ -49,23 +49,23 @@ public class AttendanceController {
      * 暂离
      */
     @PutMapping("/temporary-leave/{recordId}")
-    public Response<?> leaveTemporarily(@PathVariable Long recordId) {
+    public Response<AttendanceRecord> leaveTemporarily(@PathVariable Long recordId) {
         AttendanceRequest request = new AttendanceRequest();
         request.setRecordId(recordId);
-        attendanceService.leaveTemporarily(request);
-        return Response.success("暂离成功!", null);
+        AttendanceRecord record = attendanceService.leaveTemporarily(request);
+        return Response.success("暂离成功!", record);
     }
     /**
      * 返回暂离
      */
     @PutMapping("/cancel-temporary-leave/{recordId}")
-    public Response<?> returnFromTemporarily(@PathVariable Long recordId) {
+    public Response<AttendanceRecord> returnFromTemporarily(@PathVariable Long recordId) {
         System.out.println("收到返回暂离请求：预约ID：" + recordId);
         AttendanceRequest request = new AttendanceRequest();
         request.setRecordId(recordId);
-        attendanceService.returnFromTemporarily(request);
+        AttendanceRecord record = attendanceService.returnFromTemporarily(request);
         System.out.println("返回暂离成功！");
-        return Response.success("返回暂离成功!", null);
+        return Response.success("返回暂离成功!", record);
     }
 
     /**

@@ -17,7 +17,7 @@ public class AttendanceRecord {
     /** 签到时间 */
     private LocalDateTime checkInTime;
     /** 签退时间 */
-    private LocalDateTime signOutTime;
+    private LocalDateTime checkOutTime;
     /** 暂离总时长，单位：分钟 */
     private Integer awayDuration;
     private Integer actualStudyDuration;

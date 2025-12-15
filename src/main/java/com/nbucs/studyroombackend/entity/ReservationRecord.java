@@ -18,13 +18,13 @@ public class ReservationRecord {
     private Integer studentId;
 
     @TableField("studyRoomID")
-    private String studyRoomId;
+    private Long studyRoomId;
 
     @TableField("seatID")
-    private String seatId;
+    private Long seatId;
 
     @TableField("seminarRoomID")
-    private String seminarRoomId;
+    private Long seminarRoomId;
 
     @TableField("seminarRoomNum")
     private Integer seminarRoomNum;

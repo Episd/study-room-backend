@@ -9,8 +9,8 @@ import java.time.LocalTime;
 @Data
 public class ReserveSeatFormDto {
     private Integer studentId;
-    private String studyRoomId;
-    private String seatId;
+    private Long studyRoomId;
+    private Long seatId;
     private LocalDate date;
     private String timeSlot;
 

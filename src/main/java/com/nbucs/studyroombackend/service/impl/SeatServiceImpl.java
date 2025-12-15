@@ -38,15 +38,15 @@ public class SeatServiceImpl implements SeatService {
         }
 
         // 2. 验证必填字段
-        if (seat.getSeatId() == null || seat.getSeatId().trim().isEmpty()) {
+        if (seat.getSeatId() == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
 
-        if (seat.getSeatLocation() == null || seat.getSeatLocation().trim().isEmpty()) {
+        if (seat.getSeatLocation() == null) {
             throw new IllegalArgumentException("座位位置不能为空");
         }
 
-        if (seat.getSeatBelonging() == null || seat.getSeatBelonging().trim().isEmpty()) {
+        if (seat.getSeatBelonging() == null) {
             throw new IllegalArgumentException("所属自习室不能为空");
         }
 
@@ -117,8 +117,8 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public boolean deleteSeat(String seatId) {
-        if (seatId == null || seatId.trim().isEmpty()) {
+    public boolean deleteSeat(Long seatId) {
+        if (seatId == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
 
@@ -142,16 +142,16 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public Seat getSeatById(String seatId) {
-        if (seatId == null || seatId.trim().isEmpty()) {
+    public Seat getSeatById(Long seatId) {
+        if (seatId == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
         return seatMapper.selectById(seatId);
     }
 
     @Override
-    public List<Seat> getSeatsByStudyRoom(String studyRoomId) {
-        if (studyRoomId == null || studyRoomId.trim().isEmpty()) {
+    public List<Seat> getSeatsByStudyRoom(Long studyRoomId) {
+        if (studyRoomId == null) {
             throw new IllegalArgumentException("自习室ID不能为空");
         }
 
@@ -188,8 +188,8 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public boolean updateSeatStatus(String seatId, Integer status) {
-        if (seatId == null || seatId.trim().isEmpty()) {
+    public boolean updateSeatStatus(Long seatId, Integer status) {
+        if (seatId == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
 
@@ -205,7 +205,7 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public boolean isSeatAvailable(String seatId) {
+    public boolean isSeatAvailable(Long seatId) {
         Seat seat = getSeatById(seatId);
         if (seat == null) {
             return false;
@@ -229,7 +229,7 @@ public class SeatServiceImpl implements SeatService {
     }
 
     // 新增：批量更新座位状态
-    public boolean batchUpdateSeatStatus(List<String> seatIds, Integer status) {
+    public boolean batchUpdateSeatStatus(List<Long> seatIds, Integer status) {
         if (seatIds == null || seatIds.isEmpty()) {
             throw new IllegalArgumentException("座位ID列表不能为空");
         }
@@ -239,7 +239,7 @@ public class SeatServiceImpl implements SeatService {
         }
 
         int successCount = 0;
-        for (String seatId : seatIds) {
+        for (Long seatId : seatIds) {
             try {
                 if (updateSeatStatus(seatId, status)) {
                     successCount++;
@@ -339,5 +339,4 @@ public class SeatServiceImpl implements SeatService {
             return "未知类型";
         }
     }
-
 }

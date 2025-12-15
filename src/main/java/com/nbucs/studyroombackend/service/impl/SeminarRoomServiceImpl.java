@@ -23,7 +23,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         }
 
         // 2. 验证必填字段
-        if (seminarRoom.getSeminarRoomId() == null || seminarRoom.getSeminarRoomId().trim().isEmpty()) {
+        if (seminarRoom.getSeminarRoomId() == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
 
@@ -124,8 +124,8 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         return deleteSeminarRoom(seminarRoom.getSeminarRoomId());
     }
 
-    public boolean deleteSeminarRoom(String seminarRoomId) {
-        if (seminarRoomId == null || seminarRoomId.trim().isEmpty()) {
+    public boolean deleteSeminarRoom(Long seminarRoomId) {
+        if (seminarRoomId == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
 
@@ -182,7 +182,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     }
 
     // 新增：更新研讨室状态
-    public boolean updateSeminarRoomStatus(String seminarRoomId, Integer status) {
+    public boolean updateSeminarRoomStatus(Long seminarRoomId, Integer status) {
         SeminarRoom seminarRoom = new SeminarRoom();
         seminarRoom.setSeminarRoomId(seminarRoomId);
         seminarRoom.setSeminarRoomStatus(status);
@@ -190,7 +190,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     }
 
     // 新增：更新当前人数
-    public boolean updateCurrentNum(String seminarRoomId, Integer currentNum) {
+    public boolean updateCurrentNum(Long seminarRoomId, Integer currentNum) {
         SeminarRoom seminarRoom = new SeminarRoom();
         seminarRoom.setSeminarRoomId(seminarRoomId);
         seminarRoom.setCurrentNum(currentNum);

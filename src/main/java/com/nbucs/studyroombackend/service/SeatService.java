@@ -23,7 +23,7 @@ public interface SeatService {
     /**
      * 根据ID删除座位
      */
-    boolean deleteSeat(String seatId);
+    boolean deleteSeat(Long seatId);
 
     /**
      * 获取所有座位
@@ -33,12 +33,12 @@ public interface SeatService {
     /**
      * 根据ID获取座位
      */
-    Seat getSeatById(String seatId);
+    Seat getSeatById(Long seatId);
 
     /**
      * 根据自习室ID获取座位
      */
-    List<Seat> getSeatsByStudyRoom(String studyRoomId);
+    List<Seat> getSeatsByStudyRoom(Long studyRoomId);
 
     /**
      * 根据座位状态获取座位
@@ -53,12 +53,12 @@ public interface SeatService {
     /**
      * 更新座位状态
      */
-    boolean updateSeatStatus(String seatId, Integer status);
+    boolean updateSeatStatus(Long seatId, Integer status);
 
     /**
      * 检查座位是否可用（可预约）
      */
-    boolean isSeatAvailable(String seatId);
+    boolean isSeatAvailable(Long seatId);
 
     /**
      * 根据位置模糊查询座位

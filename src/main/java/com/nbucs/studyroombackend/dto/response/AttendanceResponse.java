@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class AttendanceResponse {
     private Long id;
     private Integer studentId;
-    private String roomId;
+    private Long roomId;
     private LocalDateTime checkInTime;
     private LocalDateTime checkOutTime;
 

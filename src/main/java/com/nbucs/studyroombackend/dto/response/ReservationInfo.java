@@ -7,8 +7,8 @@ import java.time.format.DateTimeFormatter;
 @Data
 public class ReservationInfo {
     private String id;
-    private String roomId;
-    private String seatId;
+    private Long roomId;
+    private Long seatId;
     private String date;
     private String timeSlot;
     private String status;

@@ -16,7 +16,7 @@ import java.time.LocalTime;
 public class SeminarRoom {
 
     @TableId(value = "seminarRoomID", type = IdType.AUTO)
-    private Long seminarRoomId;
+    private Long seminarRoomID;
 
     @TableField("seminarRoomLocation")
     private String seminarRoomLocation;

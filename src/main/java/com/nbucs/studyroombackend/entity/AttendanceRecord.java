@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 public class AttendanceRecord {
     /** 考勤编号，主键 */
     @TableId(value = "attendanceRecordID", type = IdType.AUTO)
-    private Long attendanceRecordId;
+    private Long attendanceRecordID;
     /** 学号 */
     @TableField("studentID")
-    private int studentId;
+    private int studentID;
     /** 签到时间 */
     @TableField("checkInTime")
     private LocalDateTime checkInTime;
@@ -30,11 +30,11 @@ public class AttendanceRecord {
     @TableField("reservationRecordID")
     private String reservationRecordId;
     @TableField("studyRoomID")
-    private Long studyRoomId;
+    private Long studyRoomID;
     @TableField("seatID")
-    private Long seatId;
+    private Long seatID;
     @TableField("seminarRoomID")
-    private Long seminarRoomId;
+    private Long seminarRoomID;
     // 1-正常 2-早退 3-超时 4-异常
     @TableField("attendanceStatus")
     private Integer attendanceStatus;

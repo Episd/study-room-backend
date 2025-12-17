@@ -14,9 +14,9 @@ public class ReservationInfo {
     private String status;
 
     public void transformToDto(ReservationRecord reservationRecord) {
-        this.id = reservationRecord.getReservationRecordId();
-        this.roomId = reservationRecord.getStudyRoomId();
-        this.seatId = reservationRecord.getSeatId();
+        this.id = reservationRecord.getReservationRecordID();
+        this.roomId = reservationRecord.getStudyRoomID();
+        this.seatId = reservationRecord.getSeatID();
         // 日期格式化
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         this.date = reservationRecord.getReservationStartTime() != null

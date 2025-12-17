@@ -38,7 +38,7 @@ public class SeatServiceImpl implements SeatService {
         }
 
         // 2. 验证必填字段
-        if (seat.getSeatId() == null) {
+        if (seat.getSeatID() == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
 
@@ -51,9 +51,9 @@ public class SeatServiceImpl implements SeatService {
         }
 
         // 3. 检查是否已存在
-        Seat existing = seatMapper.selectById(seat.getSeatId());
+        Seat existing = seatMapper.selectById(seat.getSeatID());
         if (existing != null) {
-            throw new RuntimeException("座位ID已存在：" + seat.getSeatId());
+            throw new RuntimeException("座位ID已存在：" + seat.getSeatID());
         }
 
         // 4. 设置默认值
@@ -83,14 +83,14 @@ public class SeatServiceImpl implements SeatService {
     @Override
     public boolean updateSeat(Seat seat) {
         // 1. 参数验证
-        if (seat == null || seat.getSeatId() == null) {
+        if (seat == null || seat.getSeatID() == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
 
         // 2. 检查记录是否存在
-        Seat existing = seatMapper.selectById(seat.getSeatId());
+        Seat existing = seatMapper.selectById(seat.getSeatID());
         if (existing == null) {
-            throw new RuntimeException("座位不存在：" + seat.getSeatId());
+            throw new RuntimeException("座位不存在：" + seat.getSeatID());
         }
 
         // 3. 验证类型（如果提供了）
@@ -110,10 +110,10 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public boolean deleteSeat(Seat seat) {
-        if (seat == null || seat.getSeatId() == null) {
+        if (seat == null || seat.getSeatID() == null) {
             throw new IllegalArgumentException("座位ID不能为空");
         }
-        return deleteSeat(seat.getSeatId());
+        return deleteSeat(seat.getSeatID());
     }
 
     @Override
@@ -137,7 +137,7 @@ public class SeatServiceImpl implements SeatService {
     public List<Seat> getAllSeats() {
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByAsc(Seat::getSeatBelonging)  // 先按自习室排序
-                .orderByAsc(Seat::getSeatId);        // 再按座位ID排序
+                .orderByAsc(Seat::getSeatID);        // 再按座位ID排序
         return seatMapper.selectList(queryWrapper);
     }
 
@@ -157,7 +157,7 @@ public class SeatServiceImpl implements SeatService {
 
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Seat::getSeatBelonging, studyRoomId)
-                .orderByAsc(Seat::getSeatId);
+                .orderByAsc(Seat::getSeatID);
         return seatMapper.selectList(queryWrapper);
     }
 
@@ -170,7 +170,7 @@ public class SeatServiceImpl implements SeatService {
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Seat::getSeatStatus, status)
                 .orderByAsc(Seat::getSeatBelonging)
-                .orderByAsc(Seat::getSeatId);
+                .orderByAsc(Seat::getSeatID);
         return seatMapper.selectList(queryWrapper);
     }
 
@@ -183,7 +183,7 @@ public class SeatServiceImpl implements SeatService {
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Seat::getSeatType, type)
                 .orderByAsc(Seat::getSeatBelonging)
-                .orderByAsc(Seat::getSeatId);
+                .orderByAsc(Seat::getSeatID);
         return seatMapper.selectList(queryWrapper);
     }
 
@@ -198,11 +198,35 @@ public class SeatServiceImpl implements SeatService {
         }
 
         Seat seat = new Seat();
-        seat.setSeatId(seatId);
+        seat.setSeatID(seatId);
         seat.setSeatStatus(status);
 
         return updateSeat(seat);
     }
+
+    @Override
+    public boolean updateSeatCheckInStatus(Long seatId, Integer status) {
+        if (seatId == null) {
+            throw new IllegalArgumentException("座位ID不能为空");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("签到状态不能为空");
+        }
+
+        // 1. 查询座位是否存在
+        Seat seat = seatMapper.selectById(seatId);
+        if (seat == null) {
+            throw new IllegalArgumentException("座位不存在，ID=" + seatId);
+        }
+
+        // 2. 更新签到状态
+        seat.setSeatCheckInStatus(status);
+        int rows = seatMapper.updateById(seat);
+
+        // 3. 返回是否更新成功
+        return rows > 0;
+    }
+
 
     @Override
     public boolean isSeatAvailable(Long seatId) {
@@ -224,7 +248,7 @@ public class SeatServiceImpl implements SeatService {
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(Seat::getSeatLocation, locationKeyword)
                 .orderByAsc(Seat::getSeatBelonging)
-                .orderByAsc(Seat::getSeatId);
+                .orderByAsc(Seat::getSeatID);
         return seatMapper.selectList(queryWrapper);
     }
 
@@ -258,7 +282,7 @@ public class SeatServiceImpl implements SeatService {
         LambdaQueryWrapper<Seat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Seat::getSeatBelonging, studyRoomId)
                 .eq(Seat::getSeatStatus, STATUS_AVAILABLE)
-                .orderByAsc(Seat::getSeatId);
+                .orderByAsc(Seat::getSeatID);
         return seatMapper.selectList(queryWrapper);
     }
 

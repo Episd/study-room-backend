@@ -47,13 +47,13 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceRecord checkIn(AttendanceRequest request) {
-        System.out.println("进行签到服务中：学生Id：" + request.getStudentId() + "，座位号：" + request.getSeatNumber() + "，教室号：" + request.getRoomId());
+        System.out.println("进行签到服务中：学生Id：" + request.getStudentID() + "，座位号：" + request.getSeatID() + "，教室号：" + request.getStudyRoomID());
         // 1. 查找对应预约记录
         ReservationRecord reservation = reservationRecordMapper.selectOne(
                 new QueryWrapper<ReservationRecord>()
-                        .eq("studentID", request.getStudentId())
-                        .eq("studyRoomID", request.getRoomId())
-                        .eq("seatID", request.getSeatNumber())
+                        .eq("studentID", request.getStudentID())
+                        .eq("studyRoomID", request.getStudyRoomID())
+                        .eq("seatID", request.getSeatID())
                         .eq("reservationRecordStatus", 1)
                         .orderByDesc("reservationStartTime")
                         .last("LIMIT 1")
@@ -65,16 +65,17 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // 2. 生成考勤记录并补全信息
         AttendanceRecord record = new AttendanceRecord();
-        record.setStudentId(request.getStudentId());
-        record.setSeatId(request.getSeatNumber());
+        record.setStudentID(request.getStudentID());
+        record.setSeatID(request.getSeatID());
         record.setCheckInTime(LocalDateTime.now());
         record.setCheckOutTime(null);
         record.setAwayDuration(0);
         record.setActualStudyDuration(0);
 
         // 补全预约相关信息
-        record.setReservationRecordId(reservation.getReservationRecordId());
-        record.setSeminarRoomId(reservation.getSeminarRoomId());
+        record.setReservationRecordId(reservation.getReservationRecordID());
+        record.setSeminarRoomID(reservation.getSeminarRoomID());
+        record.setStudyRoomID(reservation.getStudyRoomID());
 
         // 初始考勤状态：1-正常
         record.setAttendanceStatus(1);
@@ -82,7 +83,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         // 3. 插入考勤记录
         attendanceRecordMapper.insert(record);
 
-        seatService.updateSeatStatus(request.getSeatNumber(), 3);
+        // 更新预约状态与座位状态
+        reservationService.updateReservationStatus(reservation.getReservationRecordID(), 2);
+
+        seatService.updateSeatCheckInStatus(request.getSeatID(), 1);
 
         return record;
     }
@@ -91,9 +95,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceRecord checkOut(AttendanceRecord record) {
-        System.out.println("进行签退服务中：签到记录Id：" + record.getAttendanceRecordId());
+        System.out.println("进行签退服务中：签到记录Id：" + record.getAttendanceRecordID());
         // 查找签到记录
-        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(record.getAttendanceRecordId());
+        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(record.getAttendanceRecordID());
         if (attendanceRecord == null) {
             System.out.println("未找到签到记录，无法签退");
             throw new ServiceException(404, "未找到签到记录，无法签退");
@@ -117,6 +121,9 @@ public class AttendanceServiceImpl implements AttendanceService {
         if(attendanceRecordMapper.updateById(attendanceRecord) == 0) {
             throw new ServiceException(500, "更新数据库失败");
         }
+        // 更新预约状态与座位状态
+        reservationService.updateReservationStatus(attendanceRecord.getReservationRecordId(), 3);
+        seatService.updateSeatCheckInStatus(attendanceRecord.getSeatID(), 0);
 
         // 返回更新后的记录
         return attendanceRecord;
@@ -125,20 +132,23 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceRecord leaveTemporarily(AttendanceRequest request) {
-        System.out.println("进行临时离开服务中：考勤记录Id：" + request.getRecordId());
-        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
+        System.out.println("进行临时离开服务中：考勤记录Id：" + request.getRecordID());
+        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordID());
         attendanceRecord.setAwayStartTime(LocalDateTime.now());
         attendanceRecordMapper.updateById(attendanceRecord);
+
+        //更新座位状态
+        seatService.updateSeatCheckInStatus(attendanceRecord.getSeatID(), 2);
         return attendanceRecord;
     }
 
     @Override
     @Transactional
     public AttendanceRecord returnFromTemporarily(AttendanceRequest request) {
-        System.out.println("进行返回暂离服务中：考勤记录Id：" + request.getRecordId());
-        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordId());
+        System.out.println("进行返回暂离服务中：考勤记录Id：" + request.getRecordID());
+        AttendanceRecord attendanceRecord = attendanceRecordMapper.selectById(request.getRecordID());
         if (attendanceRecord == null) {
-            throw new ServiceException(404, "考勤记录不存在，recordId=" + request.getRecordId());
+            throw new ServiceException(404, "考勤记录不存在，recordId=" + request.getRecordID());
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -162,6 +172,10 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         attendanceRecordMapper.updateById(attendanceRecord);
+
+
+        // 更新座位状态
+        seatService.updateSeatCheckInStatus(attendanceRecord.getSeatID(), 1);
         return attendanceRecord;
     }
 
@@ -171,7 +185,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         // 根据 studentId 查询正在签到中的考勤记录
         return attendanceRecordMapper.selectOne(
                 new QueryWrapper<AttendanceRecord>()
-                        .eq("studentID", request.getStudentId())
+                        .eq("studentID", request.getStudentID())
                         .eq("attendanceStatus", 1)
         );
     }
@@ -186,7 +200,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         // 查询当天已完成的签到记录
         return attendanceRecordMapper.selectOne(
                 new QueryWrapper<AttendanceRecord>()
-                        .eq("studentID", request.getStudentId())
+                        .eq("studentID", request.getStudentID())
                         .ge("checkInTime", startOfDay)
                         .lt("signOutTime", endOfDay)
                         .ne("attendanceStatus", 1)

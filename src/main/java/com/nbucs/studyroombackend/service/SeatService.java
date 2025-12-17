@@ -51,9 +51,11 @@ public interface SeatService {
     List<Seat> getSeatsByType(Integer type);
 
     /**
-     * 更新座位状态
+     * 更新座位预约状态
      */
     boolean updateSeatStatus(Long seatId, Integer status);
+
+    boolean updateSeatCheckInStatus(Long seatId, Integer status);
 
     /**
      * 检查座位是否可用（可预约）

@@ -30,4 +30,12 @@ public class SeatManageController {
     // 并将结果封装到Response对象中返回给前端
         return Response.success("获取所有座位成功", seatService.getAllSeats());
     }
+
+    // 获取指定座位的状态
+    @GetMapping("/seats")
+    public Response<Seat> getSeatById(@RequestParam Long seatID) {
+        // 调用服务层查询座位
+        Seat seat = seatService.getSeatById(seatID);
+        return Response.success("获取座位成功", seat);
+    }
 }

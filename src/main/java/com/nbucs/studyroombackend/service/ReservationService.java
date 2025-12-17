@@ -63,4 +63,12 @@ public interface ReservationService {
      * @return 占用时间段的预约记录列表
      */
     List<ReservationRecord> getOccupiedTimeSlots(OccupiedTimeSlotQueryDto queryDto);
+
+    /**
+     * 更新预约状态
+     * @param reservationId 预约记录ID
+     * @param status 新状态
+     * @return 返回操作是否成功，true表示更新成功，false表示更新失败
+     */
+    boolean updateReservationStatus(String reservationId, Integer status);
 }

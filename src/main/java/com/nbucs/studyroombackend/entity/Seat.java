@@ -10,7 +10,7 @@ import lombok.Data;
 @TableName("seat")
 public class Seat {
     @TableId(value = "seatID", type = IdType.AUTO)
-    private Long seatId;
+    private Long seatID;
 
     @TableField("seatLocation")
     private String seatLocation;
@@ -26,4 +26,7 @@ public class Seat {
 
     @TableField("seatNumber")
     private Integer seatNumber;
+
+    @TableField("seatCheckInStatus")
+    private Integer seatCheckInStatus;
 }

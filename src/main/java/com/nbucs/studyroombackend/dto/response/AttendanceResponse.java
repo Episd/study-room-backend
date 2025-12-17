@@ -28,9 +28,9 @@ public class AttendanceResponse {
             return null;
         }
         AttendanceResponse response = new AttendanceResponse();
-        response.setId(record.getAttendanceRecordId());
-        response.setStudentId(record.getStudentId());
-        response.setRoomId(record.getSeminarRoomId()); // 注意这里对应数据库字段
+        response.setId(record.getAttendanceRecordID());
+        response.setStudentId(record.getStudentID());
+        response.setRoomId(record.getSeminarRoomID()); // 注意这里对应数据库字段
         response.setCheckInTime(record.getCheckInTime());
         response.setCheckOutTime(record.getCheckOutTime());
         return response;

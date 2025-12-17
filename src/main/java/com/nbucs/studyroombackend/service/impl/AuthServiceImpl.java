@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public StudentUser registerStudent(StudentUser student) {
         QueryWrapper<StudentUser> wrapper = new QueryWrapper<>();
-        wrapper.eq("studentId", student.getStudentId());
+        wrapper.eq("studentId", student.getStudentID());
 
         StudentUser existUser = studentMapper.selectOne(wrapper);
 
@@ -129,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AdminUser registerAdmin(AdminUser admin) {
         QueryWrapper<AdminUser> wrapper = new QueryWrapper<>();
-        wrapper.eq("adminId", admin.getAdminId());
+        wrapper.eq("adminId", admin.getAdminID());
 
         AdminUser existUser = adminMapper.selectOne(wrapper);
 

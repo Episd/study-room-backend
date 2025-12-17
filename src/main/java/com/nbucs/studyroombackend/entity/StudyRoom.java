@@ -17,7 +17,7 @@ import java.time.LocalTime;
 public class StudyRoom {
     // 自习室ID，唯一标识一个自习室
     @TableId(value = "studyRoomID", type = IdType.AUTO)
-    private Long studyRoomId;
+    private Long studyRoomID;
     // 自习室容量，表示自习室可容纳的总人数
     @TableField("studyRoomCapacity")
     private Integer studyRoomCapacity;

@@ -32,7 +32,7 @@ public class SeatManageController {
     }
 
     // 获取指定座位的状态
-    @GetMapping("/seats")
+    @GetMapping("/seat")
     public Response<Seat> getSeatById(@RequestParam Long seatID) {
         // 调用服务层查询座位
         Seat seat = seatService.getSeatById(seatID);

@@ -23,7 +23,8 @@ public class ReservationController {
     private ReservationService reservationService;
 
     @PostMapping("/reserveSeat")
-    public Response<?> reserveSeat(@RequestBody ReserveSeatFormDto reserveSeatFormDto) {
+    public Response<?> reserveSeat(@RequestBody List<ReserveSeatFormDto> reserveSeatFormDtos) {
+        ReserveSeatFormDto reserveSeatFormDto = reserveSeatFormDtos.get(0);
         System.out.println("预约请求已到达--学生ID：" + reserveSeatFormDto.getStudentId() + "房间ID" + reserveSeatFormDto.getStudyRoomId() + "座位ID：" + reserveSeatFormDto.getSeatId());
         try {
             ReservationRecord reservationRecord = new ReservationRecord();

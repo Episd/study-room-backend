@@ -37,6 +37,6 @@ public class StudyRoomServiceImpl implements StudyRoomService {
 
     @Override
     public boolean deleteRoom(StudyRoom room) {
-        return studyRoomMapper.deleteById(room.getStudyRoomId()) > 0;
+        return studyRoomMapper.deleteById(room.getStudyRoomID()) > 0;
     }
 }

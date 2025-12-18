@@ -12,7 +12,7 @@ public class StudentServiceImpl implements StudentService {
     private StudentMapper studentMapper;
     @Override
     public StudentUser checkSelfInformation(StudentUser student) {
-        return studentMapper.selectById(student.getStudentId());
+        return studentMapper.selectById(student.getStudentID());
     }
 
     @Override

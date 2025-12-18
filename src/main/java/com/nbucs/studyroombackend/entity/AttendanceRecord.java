@@ -1,24 +1,43 @@
 package com.nbucs.studyroombackend.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@TableName("attendancerecord")
 public class AttendanceRecord {
     /** 考勤编号，主键 */
-    private String attendanceRecordId;
+    @TableId(value = "attendanceRecordID", type = IdType.AUTO)
+    private Long attendanceRecordID;
     /** 学号 */
-    private int studentId;
+    @TableField("studentID")
+    private int studentID;
     /** 签到时间 */
+    @TableField("checkInTime")
     private LocalDateTime checkInTime;
     /** 签退时间 */
-    private LocalDateTime signOutTime;
+    @TableField("checkOutTime")
+    private LocalDateTime checkOutTime;
     /** 暂离总时长，单位：分钟 */
+    @TableField("awayDuration")
     private Integer awayDuration;
+    @TableField("actualStudyDuration")
     private Integer actualStudyDuration;
+    @TableField("reservationRecordID")
     private String reservationRecordId;
-    private String seatId;
-    private String seminarRoomId;
+    @TableField("studyRoomID")
+    private Long studyRoomID;
+    @TableField("seatID")
+    private Long seatID;
+    @TableField("seminarRoomID")
+    private Long seminarRoomID;
     // 1-正常 2-早退 3-超时 4-异常
+    @TableField("attendanceStatus")
     private Integer attendanceStatus;
+    @TableField("awayStartTime")
+    private LocalDateTime awayStartTime;
 }

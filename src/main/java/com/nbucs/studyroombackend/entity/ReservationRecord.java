@@ -12,19 +12,19 @@ import java.time.LocalDateTime;
 public class ReservationRecord {
 
     @TableId(value = "reservationRecordID", type = IdType.INPUT)// 自动生成 UUID
-    private String reservationRecordId;
+    private String reservationRecordID;
 
     @TableField("studentID")
-    private Integer studentId;
+    private Integer studentID;
 
     @TableField("studyRoomID")
-    private String studyRoomId;
+    private Long studyRoomID;
 
     @TableField("seatID")
-    private String seatId;
+    private Long seatID;
 
     @TableField("seminarRoomID")
-    private String seminarRoomId;
+    private Long seminarRoomID;
 
     @TableField("seminarRoomNum")
     private Integer seminarRoomNum;

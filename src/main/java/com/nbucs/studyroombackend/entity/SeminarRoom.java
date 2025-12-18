@@ -15,8 +15,8 @@ import java.time.LocalTime;
 @TableName("seminarroom")
 public class SeminarRoom {
 
-    @TableId(value = "seminarRoomID", type = IdType.INPUT)
-    private String seminarRoomId;
+    @TableId(value = "seminarRoomID", type = IdType.AUTO)
+    private Long seminarRoomID;
 
     @TableField("seminarRoomLocation")
     private String seminarRoomLocation;
@@ -35,4 +35,10 @@ public class SeminarRoom {
 
     @TableField("seminarRoomOpentime")
     private LocalTime seminarRoomOpentime;
+
+    @TableField("seminarRoomName")
+    private String seminarRoomName;
+
+    @TableField("seminarRoomClosetime")
+    private LocalTime seminarRoomClosetime;
 }

@@ -16,8 +16,8 @@ import java.time.LocalTime;
 @TableName("studyroom")
 public class StudyRoom {
     // 自习室ID，唯一标识一个自习室
-    @TableId(value = "studyRoomID", type = IdType.INPUT)
-    private String studyRoomId;
+    @TableId(value = "studyRoomID", type = IdType.AUTO)
+    private Long studyRoomID;
     // 自习室容量，表示自习室可容纳的总人数
     @TableField("studyRoomCapacity")
     private Integer studyRoomCapacity;
@@ -28,12 +28,18 @@ public class StudyRoom {
     @TableField("studyRoomType")
     private Integer studyRoomType;
     // 自习室开放时间，使用LocalTime类型表示具体的时间点
-    @TableField("studyRoomOpenTime")
-    private LocalTime studyRoomOpenTime;
+    @TableField("studyRoomOpentime")
+    private LocalTime studyRoomOpentime;
+    // 自习室关闭时间，使用LocalTime类型表示具体的时间点
+    @TableField("studyRoomClosetime")
+    private LocalTime studyRoomClosetime;
     // 自习室状态，可能表示自习室是否开放、是否维修等状态
     @TableField("status")
     private Integer status;
     // 当前空闲座位数，实时反映自习室的可用座位资源
     @TableField("currentlyIdleSeat")
     private Integer currentlyIdleSeat;
+
+    @TableField("studyRoomName")
+    private String studyRoomName;
 }

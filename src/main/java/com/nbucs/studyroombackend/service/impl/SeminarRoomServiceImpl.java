@@ -23,7 +23,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         }
 
         // 2. 验证必填字段
-        if (seminarRoom.getSeminarRoomId() == null || seminarRoom.getSeminarRoomId().trim().isEmpty()) {
+        if (seminarRoom.getSeminarRoomID() == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
 
@@ -54,9 +54,9 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         }
 
         // 4. 检查是否已存在
-        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomId());
+        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomID());
         if (existing != null) {
-            throw new RuntimeException("研讨室ID已存在：" + seminarRoom.getSeminarRoomId());
+            throw new RuntimeException("研讨室ID已存在：" + seminarRoom.getSeminarRoomID());
         }
 
         // 5. 设置默认值
@@ -80,14 +80,14 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     @Override
     public boolean updateSeminarRoom(SeminarRoom seminarRoom){
         // 1. 参数验证
-        if (seminarRoom == null || seminarRoom.getSeminarRoomId() == null) {
+        if (seminarRoom == null || seminarRoom.getSeminarRoomID() == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
 
         // 2. 检查记录是否存在
-        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomId());
+        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomID());
         if (existing == null) {
-            throw new RuntimeException("研讨室不存在：" + seminarRoom.getSeminarRoomId());
+            throw new RuntimeException("研讨室不存在：" + seminarRoom.getSeminarRoomID());
         }
 
         // 3. 验证人数范围（如果提供了新值）
@@ -118,14 +118,14 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
 
     @Override
     public boolean deleteSeminarRoom(SeminarRoom seminarRoom){
-        if (seminarRoom == null || seminarRoom.getSeminarRoomId() == null) {
+        if (seminarRoom == null || seminarRoom.getSeminarRoomID() == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
-        return deleteSeminarRoom(seminarRoom.getSeminarRoomId());
+        return deleteSeminarRoom(seminarRoom.getSeminarRoomID());
     }
 
-    public boolean deleteSeminarRoom(String seminarRoomId) {
-        if (seminarRoomId == null || seminarRoomId.trim().isEmpty()) {
+    public boolean deleteSeminarRoom(Long seminarRoomId) {
+        if (seminarRoomId == null) {
             throw new IllegalArgumentException("研讨室ID不能为空");
         }
 
@@ -140,7 +140,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     public List<SeminarRoom> getAllSeminarRooms(){
         // 使用 LambdaQueryWrapper
         LambdaQueryWrapper<SeminarRoom> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByAsc(SeminarRoom::getSeminarRoomId);
+        queryWrapper.orderByAsc(SeminarRoom::getSeminarRoomID);
         return seminarRoomMapper.selectList(queryWrapper);
     }
 
@@ -164,7 +164,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     public List<SeminarRoom> getSeminarRoomsByStatus(Integer status) {
         LambdaQueryWrapper<SeminarRoom> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SeminarRoom::getSeminarRoomStatus, status)
-                .orderByAsc(SeminarRoom::getSeminarRoomId);
+                .orderByAsc(SeminarRoom::getSeminarRoomID);
         return seminarRoomMapper.selectList(queryWrapper);
     }
 
@@ -177,22 +177,22 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     public List<SeminarRoom> searchSeminarRoomsByLocation(String locationKeyword) {
         LambdaQueryWrapper<SeminarRoom> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(SeminarRoom::getSeminarRoomLocation, locationKeyword)
-                .orderByAsc(SeminarRoom::getSeminarRoomId);
+                .orderByAsc(SeminarRoom::getSeminarRoomID);
         return seminarRoomMapper.selectList(queryWrapper);
     }
 
     // 新增：更新研讨室状态
-    public boolean updateSeminarRoomStatus(String seminarRoomId, Integer status) {
+    public boolean updateSeminarRoomStatus(Long seminarRoomId, Integer status) {
         SeminarRoom seminarRoom = new SeminarRoom();
-        seminarRoom.setSeminarRoomId(seminarRoomId);
+        seminarRoom.setSeminarRoomID(seminarRoomId);
         seminarRoom.setSeminarRoomStatus(status);
         return updateSeminarRoom(seminarRoom);
     }
 
     // 新增：更新当前人数
-    public boolean updateCurrentNum(String seminarRoomId, Integer currentNum) {
+    public boolean updateCurrentNum(Long seminarRoomId, Integer currentNum) {
         SeminarRoom seminarRoom = new SeminarRoom();
-        seminarRoom.setSeminarRoomId(seminarRoomId);
+        seminarRoom.setSeminarRoomID(seminarRoomId);
         seminarRoom.setCurrentNum(currentNum);
         return updateSeminarRoom(seminarRoom);
     }

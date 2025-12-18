@@ -39,14 +39,14 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
 
         // 2. 检查座位是否存在（不检查座位状态，因为状态可能滞后）
-        Seat seat = seatService.getSeatById(reservationRecord.getSeatId());
+        Seat seat = seatService.getSeatById(reservationRecord.getSeatID());
         if (seat == null) {
             throw new RuntimeException("座位不存在");
         }
 
         // 3. 生成预约记录ID
         String reservationId = generateReservationId();
-        reservationRecord.setReservationRecordId(reservationId);
+        reservationRecord.setReservationRecordID(reservationId);
 
         // 3. 设置预约信息
 //        reservationRecord.setReservationRecordId(generateReservationId());
@@ -64,27 +64,76 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
     }
 
     @Override
-    public ReservationRecord reserveSeminarRoom(ReservationRecord reservationRecord) {
-        // 研讨室预约逻辑
-        if (checkTimeConflict(reservationRecord)) {
-            throw new RuntimeException("该时间段已被预约");
+    @Transactional(rollbackFor = Exception.class)
+    public boolean reserveSeminarRoom(List<ReservationRecord> reservationRecords) {
+        if (reservationRecords == null || reservationRecords.isEmpty()) {
+            throw new IllegalArgumentException("预约请求列表不能为空");
         }
 
-        // 3. 生成预约记录ID
-        String reservationId = generateReservationId();
-        reservationRecord.setReservationRecordId(reservationId);
+        // 获取第一个记录的信息用于验证
+        ReservationRecord firstRecord = reservationRecords.get(0);
 
-//        reservationRecord.setReservationRecordId(generateReservationId());
-        reservationRecord.setReservationRecordStatus(1); // 自动审批
-        reservationRecord.setCancelPermission(1); // 可取消
-        reservationRecord.setCreateTime(LocalDateTime.now());
-
-        int result = reservationRecordMapper.insert(reservationRecord);
-        if (result <= 0) {
-            throw new RuntimeException("研讨室预约失败");
+        // 检查时间段是否被占用
+        if (checkTimeConflict(firstRecord)) {
+            throw new RuntimeException("该研讨室在该时间段已被预约");
         }
 
-        return reservationRecord;
+        // 验证所有记录的基本信息
+        Long seminarRoomId = firstRecord.getStudyRoomID();
+        LocalDateTime startTime = firstRecord.getReservationStartTime();
+        LocalDateTime endTime = firstRecord.getReservationEndTime();
+
+        for (int i = 0; i < reservationRecords.size(); i++) {
+            ReservationRecord record = reservationRecords.get(i);
+
+            // 验证学生ID
+            if (record.getStudentID() == null) {
+                throw new IllegalArgumentException("第" + (i+1) + "个记录的学生ID不能为空");
+            }
+
+            // 验证时间一致性（可选）
+            if (!record.getReservationStartTime().equals(startTime) ||
+                    !record.getReservationEndTime().equals(endTime)) {
+                throw new IllegalArgumentException("所有预约记录的时间段必须相同");
+            }
+
+            // 验证是否是同一个研讨室
+            if (!record.getStudyRoomID().equals(seminarRoomId)) {
+                throw new IllegalArgumentException("所有预约必须是同一个研讨室");
+            }
+        }
+
+        try {
+            // 为每个学生生成预约记录
+            for (int i = 0; i < reservationRecords.size(); i++) {
+                ReservationRecord record = reservationRecords.get(i);
+
+                // 生成预约记录ID
+                String reservationId = generateReservationId();
+                record.setReservationRecordID(reservationId);
+
+                // 设置预约状态
+                record.setReservationRecordStatus(1); // 自动审批
+
+                // 只有第一个学生有取消权限
+                record.setCancelPermission(i == 0 ? 1 : 0);
+
+                // 设置创建时间
+                record.setCreateTime(LocalDateTime.now());
+
+                // 插入数据库
+                int result = reservationRecordMapper.insert(record);
+                if (result <= 0) {
+                    return false; // 任何一条记录插入失败，整个事务会回滚
+                }
+            }
+
+            return true; // 所有记录都插入成功
+
+        } catch (Exception e) {
+            // 异常会被@Transactional捕获并回滚
+            throw new RuntimeException("研讨室预约失败: " + e.getMessage());
+        }
     }
 
     @Override
@@ -102,12 +151,12 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
      * 检查个人时间冲突：一个学生不能在重叠时间段有多个预约
      */
     private boolean checkPersonalTimeConflict(ReservationRecord reservationRecord) {
-        if (reservationRecord.getStudentId() == null) {
+        if (reservationRecord.getStudentID() == null) {
             return false;
         }
 
         QueryWrapper<ReservationRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("studentID", reservationRecord.getStudentId())
+        queryWrapper.eq("studentID", reservationRecord.getStudentID())
                 .in("reservationRecordStatus", Arrays.asList(0, 1, 2))
                 .and(wrapper -> wrapper
                         // 放宽边界：避免刚好相邻的时间被误判为重叠
@@ -116,8 +165,8 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 );
 
         // 排除自身
-        if (reservationRecord.getReservationRecordId() != null) {
-            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordId());
+        if (reservationRecord.getReservationRecordID() != null) {
+            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordID());
         }
 
         long conflictCount = reservationRecordMapper.selectCount(queryWrapper);
@@ -131,13 +180,13 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         QueryWrapper<ReservationRecord> queryWrapper = new QueryWrapper<>();
 
         // 确定要检查的资源类型
-        boolean isSeatReservation = reservationRecord.getSeatId() != null;
-        boolean isSeminarRoomReservation = reservationRecord.getSeminarRoomId() != null;
+        boolean isSeatReservation = reservationRecord.getSeatID() != null;
+        boolean isSeminarRoomReservation = reservationRecord.getSeminarRoomID() != null;
 
         if (isSeatReservation) {
-            queryWrapper.eq("seatID", reservationRecord.getSeatId());
+            queryWrapper.eq("seatID", reservationRecord.getSeatID());
         } else if (isSeminarRoomReservation) {
-            queryWrapper.eq("seminarRoomID", reservationRecord.getSeminarRoomId());
+            queryWrapper.eq("seminarRoomID", reservationRecord.getSeminarRoomID());
         } else {
             // 既不是座位也不是研讨室预约
             return false;
@@ -151,8 +200,8 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
                 );
 
         // 排除自身（如果是更新操作）
-        if (reservationRecord.getReservationRecordId() != null) {
-            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordId());
+        if (reservationRecord.getReservationRecordID() != null) {
+            queryWrapper.ne("reservationRecordID", reservationRecord.getReservationRecordID());
         }
 
         long conflictCount = reservationRecordMapper.selectCount(queryWrapper);
@@ -338,9 +387,9 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
             for (int i = 0; i < result.size(); i++) {
                 ReservationRecord record = result.get(i);
                 System.out.println("记录 " + (i+1) + ":");
-                System.out.println("  studyRoomID: " + record.getStudyRoomId());
-                System.out.println("  seatID: " + record.getSeatId());
-                System.out.println("  seminarRoomID: " + record.getSeminarRoomId());
+                System.out.println("  studyRoomID: " + record.getStudyRoomID());
+                System.out.println("  seatID: " + record.getSeatID());
+                System.out.println("  seminarRoomID: " + record.getSeminarRoomID());
                 System.out.println("  reservationStartTime: " + record.getReservationStartTime());
                 System.out.println("  reservationEndTime: " + record.getReservationEndTime());
                 System.out.println("  reservationRecordStatus: " + record.getReservationRecordStatus());
@@ -351,6 +400,23 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
 
         return result;
+    }
+
+    @Override
+    public boolean updateReservationStatus(String reservationId,Integer reservationStatus){
+        ReservationRecord record = reservationRecordMapper.selectById(reservationId);
+        if (record == null) {
+            return false;
+        }
+
+        // 创建新的记录对象，只更新状态字段
+        ReservationRecord updateRecord = new ReservationRecord();
+        updateRecord.setReservationRecordID(reservationId);
+        updateRecord.setReservationRecordStatus(reservationStatus);
+
+        // 执行更新
+        int rows = reservationRecordMapper.updateById(updateRecord);
+        return rows > 0;
     }
 
 }

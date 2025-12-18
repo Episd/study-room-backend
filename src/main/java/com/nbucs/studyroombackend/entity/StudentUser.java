@@ -10,7 +10,7 @@ import lombok.Value;
 @TableName("studentuser")
 public class StudentUser {
     @TableId(value = "studentID")
-    private Integer studentId;
+    private Integer studentID;
     @TableField("studentName")
     private String studentName;
     @TableField("studentPassword")

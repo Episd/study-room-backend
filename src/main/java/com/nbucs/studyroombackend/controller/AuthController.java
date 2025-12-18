@@ -3,6 +3,7 @@ package com.nbucs.studyroombackend.controller;
 import com.nbucs.studyroombackend.dto.request.AuthDto;
 import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.StudentUser;
+import com.nbucs.studyroombackend.entity.AdminUser;
 import com.nbucs.studyroombackend.service.AuthService;
 import com.nbucs.studyroombackend.util.JwUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +23,14 @@ public class AuthController {
     @Autowired
     private JwUtil jwUtil;
 
-        @PostMapping("/loginStudentById")
+    @PostMapping("/loginStudentById")
     public Response<?> loginStudentById(@RequestBody AuthDto loginForm) {
        Integer Id = loginForm.getId();
        String password = loginForm.getPassword();
 
        StudentUser studentUser = authService.loginStudentById(Id, password);
 
-       String token = jwUtil.generateToken(String.valueOf(studentUser.getStudentId()));
+       String token = jwUtil.generateToken(String.valueOf(studentUser.getStudentID()));
        Map<String, Object> data = new HashMap<>();
        data.put("token", token);
        data.put("user", studentUser);
@@ -45,7 +46,7 @@ public class AuthController {
 
         StudentUser student = new StudentUser();
         student.setStudentPassword(password);
-        student.setStudentId(registerForm.getId());
+        student.setStudentID(registerForm.getId());
         student.setStudentCollege(registerForm.getCollege());
         student.setStudentName(registerForm.getName());
         student.setStudentPhoneNumber(registerForm.getPhone());
@@ -53,7 +54,7 @@ public class AuthController {
 
         StudentUser studentUser = authService.registerStudent(student);
 
-        String token = jwUtil.generateToken(String.valueOf(studentUser.getStudentId()));
+        String token = jwUtil.generateToken(String.valueOf(studentUser.getStudentID()));
 
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
@@ -72,5 +73,55 @@ public class AuthController {
         authService.resetPassword(id, phone, password);
 
         return Response.success("重置密码成功", null);
+    }
+
+    @PostMapping("/loginAdminById")
+    public Response<?> loginAdminById(@RequestBody AuthDto loginForm) {
+        Integer id = loginForm.getId();
+        String password = loginForm.getPassword();
+
+        AdminUser adminUser = authService.loginAdminById(id, password);
+
+        String token = jwUtil.generateToken(String.valueOf(adminUser.getAdminID()));
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token);
+        data.put("user", adminUser);
+        return Response.success("管理员登录成功", data);
+    }
+
+    @PostMapping("/registerAdmin")
+    public Response<?> registerAdmin(@RequestBody AuthDto registerForm) {
+        Integer id = registerForm.getId();
+        String password = registerForm.getPassword();
+
+        System.out.println("收到管理员注册请求：ID：" + id + "，密码：" + password);
+
+        AdminUser admin = new AdminUser();
+        admin.setAdminID(registerForm.getId());
+        admin.setAdminPassword(password);
+        admin.setAdminName(registerForm.getName());
+        admin.setAdminPhoneNumber(registerForm.getPhone());
+
+        AdminUser adminUser = authService.registerAdmin(admin);
+
+        String token = jwUtil.generateToken(String.valueOf(adminUser.getAdminID()));
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token);
+        data.put("user", adminUser);
+        return Response.success("管理员注册成功", data);
+    }
+
+    @PostMapping("/resetAdminPassword")
+    public Response<?> resetAdminPassword(@RequestBody AuthDto resetForm) {
+        Integer id = resetForm.getId();
+        String phone = resetForm.getPhone();
+        String password = resetForm.getPassword();
+
+        System.out.println("收到管理员重置密码请求：ID：" + id + "，电话号码：" + phone + "，密码：" + password);
+
+        authService.resetAdminPassword(id, phone, password);
+
+        return Response.success("管理员重置密码成功", null);
     }
 }

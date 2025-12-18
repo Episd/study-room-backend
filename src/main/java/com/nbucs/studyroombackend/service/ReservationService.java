@@ -21,10 +21,8 @@ public interface ReservationService {
 
     /**
      * 预约研讨室，添加预约记录
-     * @param reservationRecord 传入预约记录
-     * @return 返回记录
      */
-    ReservationRecord reserveSeminarRoom(ReservationRecord reservationRecord);
+    boolean reserveSeminarRoom(List<ReservationRecord> reservationRecords);
     /**
      * 查询指定学生的预约记录
      * @param studentId 学生ID，用于查询该学生的所有预约记录
@@ -63,4 +61,12 @@ public interface ReservationService {
      * @return 占用时间段的预约记录列表
      */
     List<ReservationRecord> getOccupiedTimeSlots(OccupiedTimeSlotQueryDto queryDto);
+
+    /**
+     * 更新预约状态
+     * @param reservationId 预约记录ID
+     * @param status 新状态
+     * @return 返回操作是否成功，true表示更新成功，false表示更新失败
+     */
+    boolean updateReservationStatus(String reservationId, Integer status);
 }

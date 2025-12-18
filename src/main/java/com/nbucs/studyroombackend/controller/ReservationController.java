@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,9 +27,9 @@ public class ReservationController {
         System.out.println("预约请求已到达--学生ID：" + reserveSeatFormDto.getStudentId() + "房间ID" + reserveSeatFormDto.getStudyRoomId() + "座位ID：" + reserveSeatFormDto.getSeatId());
         try {
             ReservationRecord reservationRecord = new ReservationRecord();
-            reservationRecord.setStudentId(reserveSeatFormDto.getStudentId());
-            reservationRecord.setStudyRoomId(reserveSeatFormDto.getStudyRoomId());
-            reservationRecord.setSeatId(reserveSeatFormDto.getSeatId());
+            reservationRecord.setStudentID(reserveSeatFormDto.getStudentId());
+            reservationRecord.setStudyRoomID(reserveSeatFormDto.getStudyRoomId());
+            reservationRecord.setSeatID(reserveSeatFormDto.getSeatId());
             reservationRecord.setReservationStartTime(reserveSeatFormDto.getStartTime());
             reservationRecord.setReservationEndTime(reserveSeatFormDto.getEndTime());
             reservationRecord.setReservationRecordStatus(0);
@@ -42,12 +43,32 @@ public class ReservationController {
     }
 
     @PostMapping("/seminar-room")
-    public Response<?> reserveSeminarRoom(@RequestBody ReservationRecord reservationRecord) {
+    public Response<?> reserveSeminarRoom(@RequestBody List<ReservationRecord> reservationRecords) {
         try {
-            ReservationRecord record = reservationService.reserveSeminarRoom(reservationRecord);
-            return Response.success("研讨室预约成功", record);
-        } catch (Exception e) {
+            if (reservationRecords == null || reservationRecords.isEmpty()) {
+                return Response.error(400, "预约请求列表不能为空");
+            }
+
+            System.out.println("研讨室预约请求：共" + reservationRecords.size() + "个预约");
+
+            boolean success = reservationService.reserveSeminarRoom(reservationRecords);
+
+            if (success) {
+                return Response.success("研讨室预约成功", Map.of(
+                        "successCount", reservationRecords.size(),
+                        "firstStudentId", reservationRecords.get(0).getStudentID(),
+                        "message", "预约成功，只有第一位学生有取消权限"
+                ));
+            } else {
+                return Response.error(304, "研讨室预约失败");
+            }
+
+        } catch (IllegalArgumentException e) {
+            return Response.error(400, e.getMessage());
+        } catch (RuntimeException e) {
             return Response.error(304, e.getMessage());
+        } catch (Exception e) {
+            return Response.error(500, "服务器内部错误");
         }
     }
 
@@ -130,6 +151,21 @@ public class ReservationController {
         } catch (Exception e) {
             System.err.println("查询失败: " + e.getMessage());
             return Response.error(500, "查询失败");
+        }
+    }
+
+    @PutMapping("/status/{reservationId}")
+    public Response<?> alterReservationStatus(
+            @PathVariable String reservationId,
+            @RequestParam Integer status) {
+
+        System.out.println("修改预约状态请求：预约ID：" + reservationId + "，新状态：" + status);
+
+        try {
+            boolean result = reservationService.updateReservationStatus(reservationId, status);
+            return result ? Response.success("状态修改成功", null) : Response.error(304, "状态修改失败");
+        } catch (Exception e) {
+            return Response.error(304, e.getMessage());
         }
     }
 

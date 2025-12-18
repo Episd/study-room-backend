@@ -1,6 +1,7 @@
 package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.entity.WaitlistRecord;
 import com.nbucs.studyroombackend.mapper.WaitlistRecordMapper;
@@ -33,9 +34,9 @@ public class WaitlistServiceImpl implements WaitlistService {
         // 创建候补记录
         WaitlistRecord waitlistRecord = new WaitlistRecord();
         waitlistRecord.setWaitListRecordId(id);
-        waitlistRecord.setStudentId(reservationRecord.getStudentId());
-        waitlistRecord.setStudyRoomId(reservationRecord.getStudyRoomId());
-        waitlistRecord.setSeatId(reservationRecord.getSeatId());
+        waitlistRecord.setStudentId(reservationRecord.getStudentID());
+        waitlistRecord.setStudyRoomId(reservationRecord.getStudyRoomID());
+        waitlistRecord.setSeatId(reservationRecord.getSeatID());
         waitlistRecord.setWaitListStartTime(reservationRecord.getReservationStartTime());
         waitlistRecord.setWaitListEndTime(reservationRecord.getReservationEndTime());
         waitlistRecord.setWaitListStatus(0); // 候补中
@@ -77,8 +78,8 @@ public class WaitlistServiceImpl implements WaitlistService {
         // 创建候补记录
         WaitlistRecord waitlistRecord = new WaitlistRecord();
         waitlistRecord.setWaitListRecordId(id);
-        waitlistRecord.setStudentId(reservationRecord.getStudentId());
-        waitlistRecord.setSeminarRoomId(reservationRecord.getSeminarRoomId());
+        waitlistRecord.setStudentId(reservationRecord.getStudentID());
+        waitlistRecord.setSeminarRoomId(reservationRecord.getSeminarRoomID());
         waitlistRecord.setWaitListStartTime(reservationRecord.getReservationStartTime());
         waitlistRecord.setWaitListEndTime(reservationRecord.getReservationEndTime());
         waitlistRecord.setWaitListStatus(0); // 候补中
@@ -129,70 +130,126 @@ public class WaitlistServiceImpl implements WaitlistService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean confirmWaitlist(String waitlistRecordId) {
         if (waitlistRecordId == null || waitlistRecordId.trim().isEmpty()) {
             return false;
         }
 
-        // 1. 查询候补记录
-        WaitlistRecord waitlistRecord = waitlistRecordMapper.selectById(waitlistRecordId);
-        if (waitlistRecord == null) {
-            return false;
-        }
-
-        // 2. 检查状态是否允许确认（只有候补中可以确认）
-        if (waitlistRecord.getWaitListStatus() != 0) { // 0-候补中
+        // 1. 查询主候补记录
+        WaitlistRecord mainWaitlist = waitlistRecordMapper.selectById(waitlistRecordId);
+        if (mainWaitlist == null || mainWaitlist.getWaitListStatus() != 0) {
             return false;
         }
 
         try {
-            // 3. 创建预约记录
-            ReservationRecord reservationRecord = new ReservationRecord();
+            boolean reservationSuccess = false;
 
-            // 设置学生ID
-            reservationRecord.setStudentId(waitlistRecord.getStudentId());
+            // 判断预约类型
+            if (mainWaitlist.getStudyRoomId() != null && mainWaitlist.getSeatId() != null) {
+                // 自习室座位候补（单学生）
+                ReservationRecord reservationRecord = new ReservationRecord();
+                reservationRecord.setStudentID(mainWaitlist.getStudentId());
+                reservationRecord.setReservationStartTime(mainWaitlist.getWaitListStartTime());
+                reservationRecord.setReservationEndTime(mainWaitlist.getWaitListEndTime());
+                reservationRecord.setStudyRoomID(mainWaitlist.getStudyRoomId());
+                reservationRecord.setSeatID(mainWaitlist.getSeatId());
 
-            // 设置预约时间（使用候补时间）
-            reservationRecord.setReservationStartTime(waitlistRecord.getWaitListStartTime());
-            reservationRecord.setReservationEndTime(waitlistRecord.getWaitListEndTime());
+                // 调用自习室座位预约方法
+                ReservationRecord result = reservationService.reserveSeat(reservationRecord);
+                reservationSuccess = result != null;
 
-            // 根据候补类型创建不同的预约记录
-            if (waitlistRecord.getStudyRoomId() != null && waitlistRecord.getSeatId() != null) {
-                // 自习室座位候补
-                reservationRecord.setStudyRoomId(waitlistRecord.getStudyRoomId());
-                reservationRecord.setSeatId(waitlistRecord.getSeatId());
-
-                // 调用预约座位方法
-                ReservationRecord reserved = reservationService.reserveSeat(reservationRecord);
-                if (reserved == null) {
-                    throw new RuntimeException("预约座位失败");
+                if (reservationSuccess) {
+                    mainWaitlist.setWaitListStatus(1);
+                    return waitlistRecordMapper.updateById(mainWaitlist) > 0;
                 }
-            } else if (waitlistRecord.getSeminarRoomId() != null) {
-                // 研讨室候补
-                reservationRecord.setSeminarRoomId(waitlistRecord.getSeminarRoomId());
-                reservationRecord.setSeminarRoomNum(waitlistRecord.getSeminarRoomNum());
 
-                // 调用预约研讨室方法
-                ReservationRecord reserved = reservationService.reserveSeminarRoom(reservationRecord);
-                if (reserved == null) {
-                    throw new RuntimeException("预约研讨室失败");
+            } else if (mainWaitlist.getSeminarRoomId() != null) {
+                // 研讨室候补（多学生）
+
+                // 2. 查找同一时间同一研讨室的其他候补记录
+                List<WaitlistRecord> groupWaitlists = findGroupWaitlists(mainWaitlist);
+
+                // 3. 创建预约记录列表
+                List<ReservationRecord> reservationRecords = createReservationRecords(groupWaitlists);
+
+                // 4. 调用研讨室预约方法
+                reservationSuccess = reservationService.reserveSeminarRoom(reservationRecords);
+
+                // 5. 如果成功，更新所有相关候补记录状态
+                if (reservationSuccess) {
+                    updateGroupWaitlistStatus(groupWaitlists);
+                    return true;
                 }
+
             } else {
-                // 候补记录类型不明确
                 return false;
             }
 
-            // 4. 更新候补记录状态为已通过(1)
-            waitlistRecord.setWaitListStatus(1); // 1-已通过
-            int updateResult = waitlistRecordMapper.updateById(waitlistRecord);
-
-            return updateResult > 0;
+            return false;
 
         } catch (Exception e) {
-            // 记录日志
             System.err.println("确认候补失败: " + e.getMessage());
             throw new RuntimeException("确认候补失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 查找同一组的候补记录
+     */
+    private List<WaitlistRecord> findGroupWaitlists(WaitlistRecord mainWaitlist) {
+        List<WaitlistRecord> groupWaitlists = new ArrayList<>();
+        groupWaitlists.add(mainWaitlist);
+
+        // 查找同一时间同一研讨室的其他候补
+        QueryWrapper<WaitlistRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("seminar_room_id", mainWaitlist.getSeminarRoomId())
+                .eq("wait_list_start_time", mainWaitlist.getWaitListStartTime())
+                .eq("wait_list_end_time", mainWaitlist.getWaitListEndTime())
+                .eq("wait_list_status", 0)  // 候补中
+                .ne("id", mainWaitlist.getWaitListRecordId())  // 排除自己
+                .orderByAsc("create_time")  // 按创建时间排序，先到先得
+                .last("LIMIT 3");  // 最多再找3个，组成最多4人
+
+        List<WaitlistRecord> otherWaitlists = waitlistRecordMapper.selectList(queryWrapper);
+        groupWaitlists.addAll(otherWaitlists);
+
+        return groupWaitlists;
+    }
+
+    /**
+     * 创建预约记录列表
+     */
+    private List<ReservationRecord> createReservationRecords(List<WaitlistRecord> waitlists) {
+        List<ReservationRecord> reservationRecords = new ArrayList<>();
+
+        for (int i = 0; i < waitlists.size(); i++) {
+            WaitlistRecord waitlist = waitlists.get(i);
+
+            ReservationRecord record = new ReservationRecord();
+            record.setStudentID(waitlist.getStudentId());
+            record.setStudyRoomID(waitlist.getSeminarRoomId());
+            record.setReservationStartTime(waitlist.getWaitListStartTime());
+            record.setReservationEndTime(waitlist.getWaitListEndTime());
+
+            // 设置研讨室人数（如果有）
+            if (waitlist.getSeminarRoomNum() != null) {
+                record.setSeminarRoomNum(waitlist.getSeminarRoomNum());
+            }
+
+            reservationRecords.add(record);
+        }
+
+        return reservationRecords;
+    }
+
+    /**
+     * 更新组内所有候补记录状态
+     */
+    private void updateGroupWaitlistStatus(List<WaitlistRecord> waitlists) {
+        for (WaitlistRecord waitlist : waitlists) {
+            waitlist.setWaitListStatus(1);  // 已通过
+            waitlistRecordMapper.updateById(waitlist);
         }
     }
 }

@@ -28,9 +28,9 @@ public class WaitlistController {
                 " 座位ID：" + reserveSeatFormDto.getSeatId());
         try {
             ReservationRecord reservationRecord = new ReservationRecord();
-            reservationRecord.setStudentId(reserveSeatFormDto.getStudentId());
-            reservationRecord.setStudyRoomId(reserveSeatFormDto.getStudyRoomId());
-            reservationRecord.setSeatId(reserveSeatFormDto.getSeatId());
+            reservationRecord.setStudentID(reserveSeatFormDto.getStudentId());
+            reservationRecord.setStudyRoomID(reserveSeatFormDto.getStudyRoomId());
+            reservationRecord.setSeatID(reserveSeatFormDto.getSeatId());
             reservationRecord.setReservationStartTime(reserveSeatFormDto.getStartTime());
             reservationRecord.setReservationEndTime(reserveSeatFormDto.getEndTime());
             reservationRecord.setReservationRecordStatus(0);

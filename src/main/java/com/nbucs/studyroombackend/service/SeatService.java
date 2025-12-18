@@ -13,7 +13,7 @@ public interface SeatService {
     /**
      * 更新座位信息
      */
-    boolean updateSeat(Seat seat);
+    Seat updateSeat(Seat seat);
 
     /**
      * 删除座位

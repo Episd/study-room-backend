@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper; // 添加这行导入
 import com.nbucs.studyroombackend.entity.SeminarRoom;
+import com.nbucs.studyroombackend.exception.ServiceException;
 import com.nbucs.studyroombackend.mapper.SeminarRoomMapper;
 import com.nbucs.studyroombackend.service.SeminarRoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +17,13 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
     private SeminarRoomMapper seminarRoomMapper;
 
     @Override
-    public boolean addSeminarRoom(SeminarRoom seminarRoom){
+    public SeminarRoom addSeminarRoom(SeminarRoom seminarRoom){
         // 1. 参数验证
         if (seminarRoom == null) {
             throw new IllegalArgumentException("研讨室信息不能为空");
         }
 
-        // 2. 验证必填字段
-        if (seminarRoom.getSeminarRoomID() == null) {
-            throw new IllegalArgumentException("研讨室ID不能为空");
-        }
-
+        // 2. 验证位置（必填字段）
         if (seminarRoom.getSeminarRoomLocation() == null || seminarRoom.getSeminarRoomLocation().trim().isEmpty()) {
             throw new IllegalArgumentException("研讨室位置不能为空");
         }
@@ -53,12 +50,6 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
             throw new IllegalArgumentException("最低人数不能大于最大人数");
         }
 
-        // 4. 检查是否已存在
-        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomID());
-        if (existing != null) {
-            throw new RuntimeException("研讨室ID已存在：" + seminarRoom.getSeminarRoomID());
-        }
-
         // 5. 设置默认值
         if (seminarRoom.getSeminarRoomStatus() == null) {
             seminarRoom.setSeminarRoomStatus(0); // 0-空闲
@@ -74,22 +65,15 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
 
         // 6. 插入数据库
         int result = seminarRoomMapper.insert(seminarRoom);
-        return result > 0;
+        if(result > 0) {
+            return seminarRoom;
+        } else {
+            throw new ServiceException(500, "添加研讨室失败");
+        }
     }
 
     @Override
-    public boolean updateSeminarRoom(SeminarRoom seminarRoom){
-        // 1. 参数验证
-        if (seminarRoom == null || seminarRoom.getSeminarRoomID() == null) {
-            throw new IllegalArgumentException("研讨室ID不能为空");
-        }
-
-        // 2. 检查记录是否存在
-        SeminarRoom existing = seminarRoomMapper.selectById(seminarRoom.getSeminarRoomID());
-        if (existing == null) {
-            throw new RuntimeException("研讨室不存在：" + seminarRoom.getSeminarRoomID());
-        }
-
+    public SeminarRoom updateSeminarRoom(SeminarRoom seminarRoom){
         // 3. 验证人数范围（如果提供了新值）
         if (seminarRoom.getSeminarRoomMin() != null) {
             if (seminarRoom.getSeminarRoomMin() <= 0) {
@@ -113,7 +97,8 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         // 4. 使用MyBatis-Plus的自动填充功能更新非空字段
         // 这里updateById会只更新非null的字段
         int result = seminarRoomMapper.updateById(seminarRoom);
-        return result > 0;
+        if(result <= 0) throw new ServiceException(500, "更新研讨室失败");
+        return seminarRoom;
     }
 
     @Override
@@ -186,7 +171,8 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         SeminarRoom seminarRoom = new SeminarRoom();
         seminarRoom.setSeminarRoomID(seminarRoomId);
         seminarRoom.setSeminarRoomStatus(status);
-        return updateSeminarRoom(seminarRoom);
+        updateSeminarRoom(seminarRoom);
+        return true;
     }
 
     // 新增：更新当前人数
@@ -194,6 +180,7 @@ public class SeminarRoomServiceImpl implements SeminarRoomService {
         SeminarRoom seminarRoom = new SeminarRoom();
         seminarRoom.setSeminarRoomID(seminarRoomId);
         seminarRoom.setCurrentNum(currentNum);
-        return updateSeminarRoom(seminarRoom);
+        updateSeminarRoom(seminarRoom);
+        return true;
     }
 }

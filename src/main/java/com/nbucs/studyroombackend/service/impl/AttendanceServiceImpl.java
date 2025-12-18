@@ -192,17 +192,16 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public AttendanceRecord getTodayCompletedAttendanceRecords(AttendanceRequest request) {
+    public List<AttendanceRecord> getTodayCompletedAttendanceRecords(AttendanceRequest request) {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
-        // 查询当天已完成的签到记录
-        return attendanceRecordMapper.selectOne(
+        return attendanceRecordMapper.selectList(
                 new QueryWrapper<AttendanceRecord>()
                         .eq("studentID", request.getStudentID())
                         .ge("checkInTime", startOfDay)
-                        .lt("signOutTime", endOfDay)
+                        .lt("checkOutTime", endOfDay)
                         .ne("attendanceStatus", 1)
         );
     }

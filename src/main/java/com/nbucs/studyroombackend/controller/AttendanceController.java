@@ -8,6 +8,8 @@ import com.nbucs.studyroombackend.service.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 学生端考勤控制器，对应边界类 StudentAttendance
  */
@@ -90,13 +92,12 @@ public class AttendanceController {
     /**
      * 查询当天已完成的签到记录
      */
-    @GetMapping("/completed/{studentId}")
-    public Response<AttendanceResponse> getTodayCompletedAttendance(@PathVariable Integer studentId) {
+    @GetMapping("/today")
+    public Response<List<AttendanceRecord>> getTodayCompletedAttendance(@RequestParam Integer studentId) {
         AttendanceRequest request = new AttendanceRequest();
         request.setStudentID(studentId);
 
-        AttendanceRecord record = attendanceService.getTodayCompletedAttendanceRecords(request);
-        AttendanceResponse response = AttendanceResponse.fromRecord(record);
-        return Response.success("查询成功", response);
+        List<AttendanceRecord> records = attendanceService.getTodayCompletedAttendanceRecords(request);
+        return Response.success("查询成功", records);
     }
 }

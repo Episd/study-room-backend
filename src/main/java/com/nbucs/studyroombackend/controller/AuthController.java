@@ -80,6 +80,8 @@ public class AuthController {
         Integer id = loginForm.getId();
         String password = loginForm.getPassword();
 
+        System.out.println("收到管理员登录请求：ID：" + id + "，密码：" + password);
+
         AdminUser adminUser = authService.loginAdminById(id, password);
 
         String token = jwUtil.generateToken(String.valueOf(adminUser.getAdminID()));

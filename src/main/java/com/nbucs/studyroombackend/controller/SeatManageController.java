@@ -31,6 +31,11 @@ public class SeatManageController {
         return Response.success("获取所有座位成功", seatService.getAllSeats());
     }
 
+    @GetMapping("/getSeatByRoomID")
+    public Response<List<Seat>> getSeatByRoomID(@RequestParam Long roomID) {
+        return Response.success("获取座位成功", seatService.getSeatsByStudyRoom(roomID));
+    }
+
     // 获取指定座位的状态
     @GetMapping("/seat")
     public Response<Seat> getSeatById(@RequestParam Long seatID) {

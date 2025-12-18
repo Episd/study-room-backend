@@ -109,8 +109,8 @@ public class AuthServiceImpl implements AuthService {
         QueryWrapper<AdminUser> wrapper = new QueryWrapper<>();
         wrapper.eq("adminID", id);
 
-       AdminUser adminUser = adminMapper.selectOne(wrapper);
-
+        AdminUser adminUser = adminMapper.selectOne(wrapper);
+        System.out.println("管理员密码：" + adminUser.getAdminPassword());
         // 用户不存在 → 400
         if (adminUser == null) {
             throw new ServiceException(400, "用户不存在");

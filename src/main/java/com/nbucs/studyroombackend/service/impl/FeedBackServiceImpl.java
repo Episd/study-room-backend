@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.nbucs.studyroombackend.entity.FeedBack;
+import com.nbucs.studyroombackend.entity.Notification;
 import com.nbucs.studyroombackend.mapper.FeedBackMapper;
 import com.nbucs.studyroombackend.service.FeedBackService;
 import com.nbucs.studyroombackend.service.NotificationService;
@@ -79,6 +80,28 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
     @Override
+    public boolean updateFeedback(FeedBack feedback) {
+        // 参数验证
+        if (feedback == null) {
+            throw new IllegalArgumentException("反馈记录不能为空");
+        }
+
+        if (feedback.getFeedbackID() == null || feedback.getFeedbackID().trim().isEmpty()) {
+            throw new IllegalArgumentException("反馈ID不能为空");
+        }
+
+        // 检查记录是否存在
+        FeedBack existingFeedback = feedBackMapper.selectById(feedback.getFeedbackID());
+        if (existingFeedback == null) {
+            throw new RuntimeException("反馈记录不存在");
+        }
+
+        // 执行更新
+        int result = feedBackMapper.updateById(feedback);
+        return result > 0;
+    }
+
+    @Override
     public List<FeedBack> getStudentFeedbacks(Integer studentId) {
         if (studentId == null) {
             throw new IllegalArgumentException("学生ID不能为空");
@@ -145,12 +168,12 @@ public class FeedBackServiceImpl implements FeedBackService {
                 FeedBack updatedFeedback = feedBackMapper.selectById(feedbackId);
                 if (updatedFeedback != null) {
                     // 发送反馈处理通知
-                    boolean notificationSent = notificationService.sendFeedbackProcessedNotification(updatedFeedback);
-
-                    if (notificationSent) {
-                        System.out.println("反馈状态更新成功，通知发送成功，反馈ID: " + feedbackId);
-                    } else {
-                        System.err.println("反馈状态更新成功，但通知发送失败，反馈ID: " + feedbackId);
+                    try {
+                        Notification notification = notificationService.sendFeedbackProcessedNotification(updatedFeedback);
+                        System.out.println("反馈状态更新成功，通知发送成功，通知ID: " + notification.getNotificationID() +
+                                "，反馈ID: " + feedbackId);
+                    } catch (Exception e) {
+                        System.err.println("反馈状态更新成功，但通知发送失败，反馈ID: " + feedbackId + "，错误: " + e.getMessage());
                     }
                 }
             } catch (Exception e) {
@@ -160,6 +183,44 @@ public class FeedBackServiceImpl implements FeedBackService {
         }
 
         return result > 0;
+    }
+
+    @Override
+    public List<FeedBack> getAdminFeedbacks(Integer AdminId) {
+        if (AdminId == null) {
+            throw new IllegalArgumentException("管理员ID不能为空");
+        }
+
+        // 构建查询条件
+        QueryWrapper<FeedBack> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("processAdminID", AdminId)
+                .orderByDesc("feedbackTime"); // 按反馈时间倒序排列
+
+        // 执行查询
+        List<FeedBack> feedbacks = feedBackMapper.selectList(queryWrapper);
+
+        return feedbacks;
+    }
+
+    @Override
+    public List<FeedBack> getTimeFeedbacks(LocalDateTime startTime, LocalDateTime endTime) {
+        QueryWrapper<FeedBack> queryWrapper = new QueryWrapper<>();
+
+        // 按反馈时间倒序排列
+        queryWrapper.orderByDesc("feedbackTime");
+
+        // 如果提供了开始时间，添加开始时间条件
+        if (startTime != null) {
+            queryWrapper.ge("feedbackTime", startTime);
+        }
+
+        // 如果提供了结束时间，添加结束时间条件
+        if (endTime != null) {
+            queryWrapper.le("feedbackTime", endTime);
+        }
+
+        // 执行查询
+        return feedBackMapper.selectList(queryWrapper);
     }
 
     /**
@@ -203,4 +264,6 @@ public class FeedBackServiceImpl implements FeedBackService {
 
         return "FB" + datePart + sequencePart;
     }
+
+
 }

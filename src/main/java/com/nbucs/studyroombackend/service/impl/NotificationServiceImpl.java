@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.nbucs.studyroombackend.entity.FeedBack;
 import com.nbucs.studyroombackend.entity.Notification;
+import com.nbucs.studyroombackend.entity.ViolationRecord;
 import com.nbucs.studyroombackend.mapper.FeedBackMapper;
 import com.nbucs.studyroombackend.mapper.NotificationMapper;
 import com.nbucs.studyroombackend.service.NotificationService;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.NavigableMap;
+import java.util.List;
 
 @Service
 @Transactional
@@ -25,7 +26,92 @@ public class NotificationServiceImpl implements NotificationService {
     private FeedBackMapper feedBackMapper;
 
     @Override
-    public boolean sendFeedbackProcessedNotification(FeedBack feedback) {
+    @Transactional
+    public Notification sendFeedbackSubmittedNotification(FeedBack feedback) {
+        if (feedback == null) {
+            throw new IllegalArgumentException("反馈记录不能为空");
+        }
+
+        // 验证必要字段
+        if (feedback.getFeedbackID() == null) {
+            throw new IllegalArgumentException("反馈ID不能为空");
+        }
+
+        if (feedback.getStudentID() == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        try {
+            // 1. 创建通知记录
+            Notification notification = new Notification();
+
+            // 2. 生成通知ID
+            notification.setNotificationID(generateNotificationId());
+
+            // 3. 设置管理员ID（可以为空，因为是系统自动通知）
+            notification.setAdminID(feedback.getProcessAdminID()); // 可能为null
+
+            // 4. 设置学生ID（提交反馈的学生）
+            notification.setStudentID(feedback.getStudentID());
+
+            // 5. 设置发送时间（当前时间）
+            notification.setSendTime(LocalDateTime.now());
+
+            // 6. 设置通知状态：1-未查看（默认）
+            notification.setNotificationStatus(1);
+
+            // 7. 设置通知类型：2-反馈通知
+            notification.setNotificationType(2);
+
+            // 8. 设置标题
+            notification.setTitle("反馈提交成功");
+
+            // 9. 设置关联记录ID（反馈ID）
+            notification.setRelatedRecordID(feedback.getFeedbackID());
+
+            // 10. readTime和expireTime为空
+            notification.setReadTime(null);
+            notification.setExpireTime(null);
+
+            // 11. 构建通知内容
+            String notificationContent = buildFeedbackSubmittedContent(feedback);
+            notification.setNotificationContent(notificationContent);
+
+            // 12. 保存通知记录
+            int result = notificationMapper.insert(notification);
+
+            if (result > 0) {
+                return notification; // 返回创建的通知对象
+            } else {
+                throw new RuntimeException("发送反馈提交通知失败：保存通知记录失败");
+            }
+
+        } catch (Exception e) {
+            System.err.println("发送反馈提交通知失败: " + e.getMessage());
+            throw new RuntimeException("发送反馈提交通知失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 构建反馈提交通知内容
+     */
+    private String buildFeedbackSubmittedContent(FeedBack feedback) {
+        StringBuilder content = new StringBuilder();
+
+        // 格式化提交时间
+        String feedbackTimeStr = feedback.getFeedbackTime() != null ?
+                feedback.getFeedbackTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) :
+                "刚刚";
+
+        content.append("感谢您的反馈！您的反馈已成功提交（提交时间：")
+                .append(feedbackTimeStr)
+                .append("）。");
+
+        return content.toString();
+    }
+
+    @Override
+    public Notification sendFeedbackProcessedNotification(FeedBack feedback) {
         if (feedback == null) {
             throw new IllegalArgumentException("反馈记录不能为空");
         }
@@ -86,7 +172,11 @@ public class NotificationServiceImpl implements NotificationService {
             // 12. 保存通知记录
             int result = notificationMapper.insert(notification);
 
-            return result > 0;
+            if (result > 0) {
+                return notification; // 返回创建的通知对象
+            } else {
+                throw new RuntimeException("发送通知失败：保存通知记录失败");
+            }
 
         } catch (Exception e) {
             System.err.println("发送反馈处理通知失败: " + e.getMessage());
@@ -132,6 +222,314 @@ public class NotificationServiceImpl implements NotificationService {
         return content.toString();
     }
 
+    @Override
+    public Notification sendViolationNotification(ViolationRecord violationRecord) {
+        if (violationRecord == null) {
+            throw new IllegalArgumentException("违规记录不能为空");
+        }
+
+        // 验证必要字段
+        if (violationRecord.getViolationRecordID() == null) {
+            throw new IllegalArgumentException("违规记录ID不能为空");
+        }
+
+        if (violationRecord.getStudentID() == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        if (violationRecord.getDetails() == null) {
+            throw new IllegalArgumentException("违规详情不能为空");
+        }
+
+        if (violationRecord.getViolationTime() == null) {
+            throw new IllegalArgumentException("违规时间不能为空");
+        }
+
+        if (violationRecord.getDeductPoints() == null) {
+            throw new IllegalArgumentException("扣除积分数不能为空");
+        }
+
+        try {
+            // 1. 创建通知记录
+            Notification notification = new Notification();
+
+            // 2. 生成通知ID
+            notification.setNotificationID(generateNotificationId());
+
+            // 3. 设置管理员ID（处理违规的管理员）
+            notification.setAdminID(violationRecord.getAdminID());
+
+            // 4. 设置学生ID（触发违规的学生）
+            notification.setStudentID(violationRecord.getStudentID());
+
+            // 5. 设置发送时间（当前时间）
+            notification.setSendTime(LocalDateTime.now());
+
+            // 6. 设置通知状态：1-未查看（默认）
+            notification.setNotificationStatus(1);
+
+            // 7. 设置通知类型：1-违规通知
+            notification.setNotificationType(1);
+
+            // 8. 设置标题
+            notification.setTitle("违规通知");
+
+            // 9. 设置关联记录ID（违规记录ID）
+            notification.setRelatedRecordID(violationRecord.getViolationRecordID());
+
+            // 10. readTime和expireTime为空
+            notification.setReadTime(null);
+            notification.setExpireTime(null);
+
+            // 11. 构建通知内容
+            String notificationContent = buildViolationNotificationContent(violationRecord);
+            notification.setNotificationContent(notificationContent);
+
+            // 12. 保存通知记录
+            int result = notificationMapper.insert(notification);
+
+            if (result > 0) {
+                return notification; // 返回创建的通知对象
+            } else {
+                throw new RuntimeException("发送违规通知失败：保存通知记录失败");
+            }
+
+        } catch (Exception e) {
+            System.err.println("发送违规通知失败: " + e.getMessage());
+            throw new RuntimeException("发送违规通知失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 构建违规通知内容
+     */
+    private String buildViolationNotificationContent(ViolationRecord violationRecord) {
+        StringBuilder content = new StringBuilder();
+
+        // 格式化违规时间
+        String violationTimeStr = violationRecord.getViolationTime().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
+
+        content.append("您于")
+                .append(violationTimeStr)
+                .append("，")
+                .append(violationRecord.getDetails())
+                .append("，违反自习室规则，扣除")
+                .append(violationRecord.getDeductPoints())
+                .append("积分。如有疑问，可于通知后三天内进行违规申诉！");
+
+        return content.toString();
+    }
+
+    @Override
+    @Transactional
+    public Notification sendAppealRejectedNotification(ViolationRecord violationRecord) {
+        if (violationRecord == null) {
+            throw new IllegalArgumentException("违规记录不能为空");
+        }
+
+        // 验证必要字段
+        if (violationRecord.getViolationRecordID() == null) {
+            throw new IllegalArgumentException("违规记录ID不能为空");
+        }
+
+        if (violationRecord.getStudentID() == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        if (violationRecord.getAdminID() == null) {
+            throw new IllegalArgumentException("管理员ID不能为空");
+        }
+
+        if (violationRecord.getAppealTime() == null) {
+            throw new IllegalArgumentException("申诉时间为空，无法生成申诉驳回通知");
+        }
+
+        try {
+            // 1. 创建通知记录
+            Notification notification = new Notification();
+
+            // 2. 生成通知ID
+            notification.setNotificationID(generateNotificationId());
+
+            // 3. 设置管理员ID（处理申诉的管理员）
+            notification.setAdminID(violationRecord.getAdminID());
+
+            // 4. 设置学生ID（提交申诉的学生）
+            notification.setStudentID(violationRecord.getStudentID());
+
+            // 5. 设置发送时间（当前时间）
+            notification.setSendTime(LocalDateTime.now());
+
+            // 6. 设置通知状态：1-未查看（默认）
+            notification.setNotificationStatus(1);
+
+            // 7. 设置通知类型：2-反馈通知（申诉驳回属于反馈类型）
+            notification.setNotificationType(2);
+
+            // 8. 设置标题
+            notification.setTitle("违规申诉驳回");
+
+            // 9. 设置关联记录ID（违规记录ID）
+            notification.setRelatedRecordID(violationRecord.getViolationRecordID());
+
+            // 10. readTime和expireTime为空
+            notification.setReadTime(null);
+            notification.setExpireTime(null);
+
+            // 11. 构建通知内容
+            String notificationContent = buildAppealRejectedContent(violationRecord);
+            notification.setNotificationContent(notificationContent);
+
+            // 12. 保存通知记录
+            int result = notificationMapper.insert(notification);
+
+            if (result > 0) {
+                return notification; // 返回创建的通知对象
+            } else {
+                throw new RuntimeException("发送申诉驳回通知失败：保存通知记录失败");
+            }
+
+        } catch (Exception e) {
+            System.err.println("发送申诉驳回通知失败: " + e.getMessage());
+            throw new RuntimeException("发送申诉驳回通知失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 构建申诉驳回通知内容
+     */
+    private String buildAppealRejectedContent(ViolationRecord violationRecord) {
+        StringBuilder content = new StringBuilder();
+
+        // 格式化申诉时间
+        String appealTimeStr = violationRecord.getAppealTime().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
+
+        content.append("您于")
+                .append(appealTimeStr)
+                .append("提交的违规申诉，经管理员审核，不予通过。");
+
+        // 如果有处理意见，可以添加到通知中
+        if (violationRecord.getProcessTime() != null) {
+            content.append("（处理时间：")
+                    .append(violationRecord.getProcessTime().format(
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                    .append("）");
+        }
+
+        return content.toString();
+    }
+
+    @Override
+    @Transactional
+    public Notification sendAppealApprovedNotification(ViolationRecord violationRecord) {
+        if (violationRecord == null) {
+            throw new IllegalArgumentException("违规记录不能为空");
+        }
+
+        // 验证必要字段
+        if (violationRecord.getViolationRecordID() == null) {
+            throw new IllegalArgumentException("违规记录ID不能为空");
+        }
+
+        if (violationRecord.getStudentID() == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        if (violationRecord.getAdminID() == null) {
+            throw new IllegalArgumentException("管理员ID不能为空");
+        }
+
+        if (violationRecord.getAppealTime() == null) {
+            throw new IllegalArgumentException("申诉时间为空，无法生成申诉通过通知");
+        }
+
+        if (violationRecord.getDeductPoints() == null) {
+            throw new IllegalArgumentException("扣除积分数为空，无法生成申诉通过通知");
+        }
+
+        try {
+            // 1. 创建通知记录
+            Notification notification = new Notification();
+
+            // 2. 生成通知ID
+            notification.setNotificationID(generateNotificationId());
+
+            // 3. 设置管理员ID（处理申诉的管理员）
+            notification.setAdminID(violationRecord.getAdminID());
+
+            // 4. 设置学生ID（提交申诉的学生）
+            notification.setStudentID(violationRecord.getStudentID());
+
+            // 5. 设置发送时间（当前时间）
+            notification.setSendTime(LocalDateTime.now());
+
+            // 6. 设置通知状态：1-未查看（默认）
+            notification.setNotificationStatus(1);
+
+            // 7. 设置通知类型：2-反馈通知（申诉通过属于反馈类型）
+            notification.setNotificationType(2);
+
+            // 8. 设置标题
+            notification.setTitle("违规申诉通过");
+
+            // 9. 设置关联记录ID（违规记录ID）
+            notification.setRelatedRecordID(violationRecord.getViolationRecordID());
+
+            // 10. readTime和expireTime为空
+            notification.setReadTime(null);
+            notification.setExpireTime(null);
+
+            // 11. 构建通知内容
+            String notificationContent = buildAppealApprovedContent(violationRecord);
+            notification.setNotificationContent(notificationContent);
+
+            // 12. 保存通知记录
+            int result = notificationMapper.insert(notification);
+
+            if (result > 0) {
+                return notification; // 返回创建的通知对象
+            } else {
+                throw new RuntimeException("发送申诉通过通知失败：保存通知记录失败");
+            }
+
+        } catch (Exception e) {
+            System.err.println("发送申诉通过通知失败: " + e.getMessage());
+            throw new RuntimeException("发送申诉通过通知失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 构建申诉通过通知内容
+     */
+    private String buildAppealApprovedContent(ViolationRecord violationRecord) {
+        StringBuilder content = new StringBuilder();
+
+        // 格式化申诉时间
+        String appealTimeStr = violationRecord.getAppealTime().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
+
+        content.append("您于")
+                .append(appealTimeStr)
+                .append("提交的违规申诉，经管理员审核，已通过，已恢复扣除的")
+                .append(violationRecord.getDeductPoints())
+                .append("信用积分。");
+
+        // 如果有处理时间，可以添加到通知中
+        if (violationRecord.getProcessTime() != null) {
+            content.append("（处理时间：")
+                    .append(violationRecord.getProcessTime().format(
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                    .append("）");
+        }
+
+        return content.toString();
+    }
+
     public String generateNotificationId() {
         // 获取当前日期
         LocalDateTime now = LocalDateTime.now();
@@ -168,6 +566,34 @@ public class NotificationServiceImpl implements NotificationService {
         String sequencePart = String.format("%04d", sequence);
 
         return "NT" + datePart + sequencePart;
+    }
+
+    @Override
+    public List<Notification> queryNotifications(Integer studentId, Integer notificationType,
+                                                 Integer notificationStatus, Integer adminId) {
+        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+
+        // 按发送时间倒序排列
+        queryWrapper.orderByDesc("sendTime");
+
+        // 条件判断：如果不为null，则添加查询条件
+        if (studentId != null) {
+            queryWrapper.eq("studentID", studentId);
+        }
+
+        if (notificationType != null) {
+            queryWrapper.eq("notificationType", notificationType);
+        }
+
+        if (notificationStatus != null) {
+            queryWrapper.eq("notificationStatus", notificationStatus);
+        }
+
+        if (adminId != null) {
+            queryWrapper.eq("adminID", adminId);
+        }
+
+        return notificationMapper.selectList(queryWrapper);
     }
 
     @Override
@@ -267,6 +693,58 @@ public class NotificationServiceImpl implements NotificationService {
             System.err.println("批量标记学生通知为已查看失败，学生ID：" + studentId +
                     "，错误：" + e.getMessage());
             throw new RuntimeException("批量标记通知为已查看失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteNotificationById(String notificationId) {
+        // 参数验证
+        if (notificationId == null || notificationId.trim().isEmpty()) {
+            throw new IllegalArgumentException("通知ID不能为空");
+        }
+
+        try {
+            // 执行删除
+            int result = notificationMapper.deleteById(notificationId);
+
+            if (result > 0) {
+                System.out.println("删除通知成功，通知ID：" + notificationId);
+                return true;
+            } else {
+                System.out.println("通知不存在或删除失败，通知ID：" + notificationId);
+                return false;
+            }
+
+        } catch (Exception e) {
+            System.err.println("删除通知失败，通知ID：" + notificationId + "，错误：" + e.getMessage());
+            throw new RuntimeException("删除通知失败：" + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public int deleteNotificationsByStudentId(Integer studentId) {
+        // 参数验证
+        if (studentId == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        try {
+            // 创建删除条件
+            QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("studentID", studentId);
+
+            // 执行删除
+            int deletedCount = notificationMapper.delete(queryWrapper);
+
+            System.out.println("删除学生[" + studentId + "]的所有通知，成功删除" + deletedCount + "条");
+
+            return deletedCount;
+
+        } catch (Exception e) {
+            System.err.println("删除学生通知失败，学生ID：" + studentId + "，错误：" + e.getMessage());
+            throw new RuntimeException("删除学生通知失败：" + e.getMessage(), e);
         }
     }
 }

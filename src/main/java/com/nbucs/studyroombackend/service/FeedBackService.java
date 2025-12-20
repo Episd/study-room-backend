@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service;
 
 import com.nbucs.studyroombackend.entity.FeedBack;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface FeedBackService {
@@ -13,6 +14,21 @@ public interface FeedBackService {
     FeedBack submitFeedback(FeedBack feedback);
 
     /**
+     * 更新反馈记录内容
+     * @param feedback 包含更新内容的反馈对象（必须包含feedbackID）
+     * @return 更新是否成功
+     */
+    boolean updateFeedback(FeedBack feedback);
+
+    /**
+     * 更新反馈状态，处理反馈
+     * @param feedbackId 反馈ID
+     * @param newStatus 新状态
+     * @return 更新是否成功
+     */
+    boolean updateFeedbackStatus(String feedbackId, Integer newStatus);
+
+    /**
      * 获取学生的所有反馈记录
      * @param studentId 学生ID
      * @return 反馈记录列表
@@ -20,10 +36,17 @@ public interface FeedBackService {
     List<FeedBack> getStudentFeedbacks(Integer studentId);
 
     /**
-     * 更新反馈状态
-     * @param feedbackId 反馈ID
-     * @param newStatus 新状态
-     * @return 更新是否成功
+     * 获取管理员负责的所有反馈记录
+     * @param AdminId 管理员ID
+     * @return 反馈记录列表
      */
-    boolean updateFeedbackStatus(String feedbackId, Integer newStatus);
+    List<FeedBack> getAdminFeedbacks(Integer AdminId);
+
+    /**
+     * 根据时间范围查询反馈记录
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 反馈记录列表
+     */
+    List<FeedBack> getTimeFeedbacks(LocalDateTime startTime, LocalDateTime endTime);
 }

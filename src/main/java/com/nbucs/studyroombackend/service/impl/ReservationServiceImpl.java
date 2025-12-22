@@ -1,6 +1,5 @@
 package com.nbucs.studyroombackend.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.nbucs.studyroombackend.dto.request.OccupiedTimeSlotQueryDto;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
@@ -15,11 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.baomidou.mybatisplus.extension.ddl.DdlScriptErrorHandler.PrintlnLogErrorHandler.log;
 
 @Service
 @Transactional
@@ -417,6 +415,49 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         // 执行更新
         int rows = reservationRecordMapper.updateById(updateRecord);
         return rows > 0;
+    }
+
+    @Override
+    public List<ReservationRecord> queryReservationRecords(Integer studentID,
+                                                           LocalDate reservationDate,
+                                                           Long studyRoomID,
+                                                           Long seminarRoomID,
+                                                           Integer reservationRecordStatus) {
+
+        QueryWrapper<ReservationRecord> queryWrapper = new QueryWrapper<>();
+
+        // 按创建时间倒序排列
+        queryWrapper.orderByDesc("createTime");
+
+        // 学号查询
+        if (studentID != null) {
+            queryWrapper.eq("studentID", studentID);
+        }
+
+        // 预约日期查询
+        if (reservationDate != null) {
+            LocalDateTime startOfDay = reservationDate.atStartOfDay();
+            LocalDateTime endOfDay = reservationDate.atTime(LocalTime.MAX);
+            queryWrapper.ge("reservationStartTime", startOfDay)
+                    .le("reservationStartTime", endOfDay);
+        }
+
+        // 自习室ID查询
+        if (studyRoomID != null) {
+            queryWrapper.eq("studyRoomID", studyRoomID);
+        }
+
+        // 研讨室ID查询
+        if (seminarRoomID != null) {
+            queryWrapper.eq("seminarRoomID", seminarRoomID);
+        }
+
+        // 预约记录状态查询
+        if (reservationRecordStatus != null) {
+            queryWrapper.eq("reservationRecordStatus", reservationRecordStatus);
+        }
+
+        return reservationRecordMapper.selectList(queryWrapper);
     }
 
 }

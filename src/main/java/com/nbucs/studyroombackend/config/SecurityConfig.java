@@ -34,6 +34,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/resourceManage/**").permitAll()
                         .requestMatchers("/api/seatManage/**").permitAll()
                         .requestMatchers("/api/attendance/**").permitAll()
+                        .requestMatchers("/api/violation/**").permitAll()
+                        .requestMatchers("/api/wait/**").permitAll()
+                        .requestMatchers("/api/notification/**").permitAll()
+                        .requestMatchers("/api/seminar-room/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

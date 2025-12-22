@@ -3,6 +3,7 @@ package com.nbucs.studyroombackend.service;
 import com.nbucs.studyroombackend.entity.ReservationRecord;
 import com.nbucs.studyroombackend.dto.request.OccupiedTimeSlotQueryDto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -29,6 +30,21 @@ public interface ReservationService {
      * @return 返回预约记录列表，包含该学生的所有预约信息
      */
     List<ReservationRecord> checkReservationRecord(Integer studentId);
+
+    /**
+     * 多条件查询预约记录列表（不分页）
+     * @param studentID 学号
+     * @param reservationDate 预约日期
+     * @param studyRoomID 自习室ID
+     * @param seminarRoomID 研讨室ID
+     * @param reservationRecordStatus 预约记录状态
+     * @return 预约记录列表
+     */
+    List<ReservationRecord> queryReservationRecords(Integer studentID,
+                                                   LocalDate reservationDate,
+                                                   Long studyRoomID,
+                                                   Long seminarRoomID,
+                                                   Integer reservationRecordStatus);
     /**
      * 查询学生当天最早的预约记录
      * @param studentId 学生ID（字符串类型）

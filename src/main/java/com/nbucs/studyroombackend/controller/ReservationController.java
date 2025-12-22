@@ -9,6 +9,7 @@ import com.nbucs.studyroombackend.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -170,4 +171,31 @@ public class ReservationController {
         }
     }
 
+    @GetMapping("/query")
+    public Response<?> queryReservationRecords(
+            @RequestParam(required = false) Integer studentId,
+            @RequestParam(required = false) LocalDate reservationDate,
+            @RequestParam(required = false) Long studyRoomId,
+            @RequestParam(required = false) Long seminarRoomId,
+            @RequestParam(required = false) Integer status) {
+
+        System.out.println("查询预约记录请求：" +
+                "学号=" + studentId +
+                ", 日期=" + reservationDate +
+                ", 自习室ID=" + studyRoomId +
+                ", 研讨室ID=" + seminarRoomId +
+                ", 状态=" + status);
+
+        try {
+            List<ReservationRecord> records = reservationService.queryReservationRecords(
+                    studentId, reservationDate, studyRoomId, seminarRoomId, status);
+
+            return Response.success("查询成功", records);
+
+        } catch (Exception e) {
+            System.err.println("查询预约记录失败: " + e.getMessage());
+            e.printStackTrace();
+            return Response.error(304, "查询失败: " + e.getMessage());
+        }
+    }
 }

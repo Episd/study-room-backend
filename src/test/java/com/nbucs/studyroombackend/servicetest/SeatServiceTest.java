@@ -27,8 +27,8 @@ public class SeatServiceTest {
     private SeatService seatService;
 
     // 测试用的常量
-    private static final String TEST_SEAT_ID = "A102-05";
-    private static final String TEST_STUDY_ROOM_ID = "A102  ";
+    private static final Long TEST_SEAT_ID = 1L;
+    private static final Long TEST_STUDY_ROOM_ID = 1L;
 
     @Test
     @Order(1)
@@ -37,7 +37,7 @@ public class SeatServiceTest {
 
         // 准备测试数据
         Seat seat = new Seat();
-        seat.setSeatId(TEST_SEAT_ID);
+        seat.setSeatID(TEST_SEAT_ID);
         seat.setSeatLocation("{\"row\": 3, \"col\": 9}");
         seat.setSeatBelonging(TEST_STUDY_ROOM_ID);
         seat.setSeatType(0); // 通用座位
@@ -159,7 +159,7 @@ public class SeatServiceTest {
 
             // 验证查询结果
             boolean foundTestSeat = seats.stream()
-                    .anyMatch(seat -> TEST_SEAT_ID.equals(seat.getSeatId()));
+                    .anyMatch(seat -> TEST_SEAT_ID.equals(seat.getSeatID()));
             assertTrue(foundTestSeat, "应该包含测试座位");
 
         } catch (Exception e) {
@@ -183,7 +183,7 @@ public class SeatServiceTest {
             if (!allSeats.isEmpty()) {
                 System.out.println("前3个座位：");
                 allSeats.stream().limit(3).forEach(seat ->
-                        System.out.println("  - " + seat.getSeatId() + ": " + seat.getSeatLocation())
+                        System.out.println("  - " + seat.getSeatID() + ": " + seat.getSeatLocation())
                 );
             }
 

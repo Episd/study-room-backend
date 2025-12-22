@@ -11,7 +11,7 @@ import lombok.Data;
 public class AdminUser {
     @TableId(value = "adminID", type = IdType.INPUT)
     private Integer adminID;
-    @TableField("adminID")
+    @TableField("adminPassword")
     private String adminPassword;
     @TableField("adminPosition")
     private String adminPosition;

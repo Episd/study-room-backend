@@ -57,4 +57,10 @@ public interface ViolationService {
      * @return 成功更新的数量
      */
     int batchConfirmViolations(List<String> violationRecordIds);
+
+    boolean deleteViolationRecord(String violationRecordId);
+
+    int deleteViolationRecordByStudentId(Integer studentId);
+
+
 }

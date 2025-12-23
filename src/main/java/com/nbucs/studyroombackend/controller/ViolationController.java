@@ -248,4 +248,57 @@ public class ViolationController {
         }
     }
 
+    /**
+     * 删除单条违规记录
+     */
+    @DeleteMapping("/delete")
+    public Response<?> deleteViolationRecord(@RequestBody String violationId) {
+
+        try {
+            if (violationId == null || violationId.trim().isEmpty()) {
+                return Response.error(400, "违规ID不能为空");
+            }
+
+            System.out.println("删除通知请求ID=" + violationId);
+
+            boolean success = violationRecordService.deleteViolationRecord(violationId);
+            if (success) {
+                return Response.success("删除违规记录成功", null);
+            } else {
+                return Response.error(304, "删除违规记录失败，可能记录不存在");
+            }
+        } catch (IllegalArgumentException e) {
+            return Response.error(400, e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.error(304, e.getMessage());
+        } catch (Exception e) {
+            System.err.println("删除违规异常: " + e.getMessage());
+            return Response.error(500, "操作失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 删除学生的所有通知
+     */
+    @DeleteMapping("/student")
+    public Response<?> deleteViolationRecordByStudentId(@RequestBody Integer studentId) {
+        try{
+            if (studentId == null) {
+                return Response.error(400,"学生ID不能为空");
+            }
+
+            int deleteResult = violationRecordService.deleteViolationRecordByStudentId(studentId);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("deleteResult", deleteResult);
+
+            return Response.success("成功删除", result);
+        } catch (IllegalArgumentException e) {
+            return Response.error(400, e.getMessage());
+        } catch (RuntimeException e) {
+            return Response.error(304, e.getMessage());
+        } catch (Exception e) {
+            return Response.error(500, "操作失败，请稍后重试");
+        }
+    }
 }

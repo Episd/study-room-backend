@@ -113,6 +113,14 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
+    public List<Seat> updateSeats(Long roomID, List<Seat> list) {
+        for (Seat seat : list) {
+            updateSeat(seat);
+        }
+        return list;
+    }
+
+    @Override
     public boolean deleteSeat(Seat seat) {
         if (seat == null || seat.getSeatID() == null) {
             throw new IllegalArgumentException("座位ID不能为空");

@@ -34,4 +34,9 @@ public class SeatManageController {
         seat.setSeatID(seatID);
         return Response.success("更新座位成功", seatService.updateSeat(seat));
     }
+
+    @PutMapping("/saveSeats/{roomID}")
+    public Response<?> saveSeats(@PathVariable Long roomID, @RequestBody List<Seat> seats) {
+        return Response.success("保存座位成功", seatService.updateSeats(roomID, seats));
+    }
 }

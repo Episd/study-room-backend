@@ -26,6 +26,12 @@ public class SeminarRoomManageController {
         return Response.success("添加自习室成功", seminarRoomService.addSeminarRoom(seminarRoom));
     }
 
+    @PutMapping("/updateSeminarRoom/{id}")
+    public Response<SeminarRoom> updateStudyRoom(@PathVariable("id") Long id, @RequestBody SeminarRoom room) {
+        room.setSeminarRoomID(id);
+        return Response.success("更新自习室成功", seminarRoomService.updateSeminarRoom(room));
+    }
+
     @DeleteMapping("/deleteSeminarRoom/{id}")
     public Response<String> deleteSeminarRoom(@PathVariable("id") Long id) {
         SeminarRoom seminarRoom = new SeminarRoom();

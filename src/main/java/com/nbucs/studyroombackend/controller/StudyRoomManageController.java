@@ -25,8 +25,9 @@ public class StudyRoomManageController {
         return Response.success("添加自习室成功", studyRoomService.addRoom(studyRoom));
     }
 
-    @PutMapping("/updateStudyRoom")
-    public Response<StudyRoom> updateStudyRoom(@RequestBody StudyRoom room) {
+    @PutMapping("/updateStudyRoom/{id}")
+    public Response<StudyRoom> updateStudyRoom(@PathVariable("id") Long id, @RequestBody StudyRoom room) {
+        room.setStudyRoomID(id);
         return Response.success("更新自习室成功", studyRoomService.updateRoom(room));
     }
 

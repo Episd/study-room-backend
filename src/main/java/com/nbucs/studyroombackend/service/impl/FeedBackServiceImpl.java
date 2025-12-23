@@ -96,8 +96,44 @@ public class FeedBackServiceImpl implements FeedBackService {
             throw new RuntimeException("反馈记录不存在");
         }
 
+        // 记录原始状态，用于判断是否需要发送通知
+        Integer originalStatus = existingFeedback.getProcessStatus();
+
         // 执行更新
         int result = feedBackMapper.updateById(feedback);
+
+        // 如果更新成功，检查是否需要发送通知
+        if (result > 0) {
+            // 重新查询更新后的完整记录
+            FeedBack updatedFeedback = feedBackMapper.selectById(feedback.getFeedbackID());
+
+            if (updatedFeedback != null) {
+                // 检查状态是否被修改为已回复(3)或已关闭(4)
+                Integer newStatus = updatedFeedback.getProcessStatus();
+
+                // 如果状态从非3/4变为3/4，发送通知
+                if (newStatus != null && (newStatus == 3 || newStatus == 4)) {
+                    if (originalStatus == null || (originalStatus != 3 && originalStatus != 4)) {
+                        try {
+                            // 发送反馈处理通知
+                            notificationService.sendFeedbackProcessedNotification(updatedFeedback);
+                            System.out.println("反馈处理通知发送成功，反馈ID: " + feedback.getFeedbackID());
+                        } catch (Exception e) {
+                            System.err.println("反馈更新成功，但通知发送失败，反馈ID: " + feedback.getFeedbackID() +
+                                    "，错误: " + e.getMessage());
+                            // 通知发送失败不影响主操作
+                        }
+                    }
+                }
+
+                // 如果有设置processAdminID，说明是管理员在处理反馈
+                if (updatedFeedback.getProcessAdminID() != null) {
+                    System.out.println("反馈已被管理员[" + updatedFeedback.getProcessAdminID() +
+                            "]处理，反馈ID: " + feedback.getFeedbackID());
+                }
+            }
+        }
+
         return result > 0;
     }
 

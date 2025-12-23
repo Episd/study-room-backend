@@ -14,14 +14,14 @@ public interface FeedBackService {
     FeedBack submitFeedback(FeedBack feedback);
 
     /**
-     * 更新反馈记录内容
+     * 更新反馈记录内容，处理反馈
      * @param feedback 包含更新内容的反馈对象（必须包含feedbackID）
      * @return 更新是否成功
      */
     boolean updateFeedback(FeedBack feedback);
 
     /**
-     * 更新反馈状态，处理反馈
+     * 更新反馈状态
      * @param feedbackId 反馈ID
      * @param newStatus 新状态
      * @return 更新是否成功

@@ -322,39 +322,27 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         LocalDateTime startTime = queryDate.atStartOfDay();
         LocalDateTime endTime = queryDate.atTime(23, 59, 59);
 
-        System.out.println("=== 查询参数 ===");
-        System.out.println("studyRoomId: " + queryDto.getStudyRoomId());
-        System.out.println("seatId: " + queryDto.getSeatId());
-        System.out.println("seminarRoomId: " + queryDto.getSeminarRoomId());
-        System.out.println("queryDate: " + queryDate);
-        System.out.println("时间范围: " + startTime + " - " + endTime);
-
         // 使用QueryWrapper构建查询条件
         QueryWrapper<ReservationRecord> wrapper = new QueryWrapper<>();
 
         // 日期条件：查询当天的预约
         wrapper.between("reservationStartTime", startTime, endTime);
-        System.out.println("SQL条件1: reservationStartTime BETWEEN " + startTime + " AND " + endTime);
 
         // 状态条件：已通过(1)或已开始(2)
         wrapper.in("reservationRecordStatus", Arrays.asList(1, 2));
-        System.out.println("SQL条件2: reservationRecordStatus IN (1, 2)");
 
         // 自习室相关条件
         if (queryDto.getStudyRoomId() != null && !queryDto.getStudyRoomId().trim().isEmpty()) {
             wrapper.eq("studyRoomID", queryDto.getStudyRoomId());
-            System.out.println("SQL条件3: studyRoomID = " + queryDto.getStudyRoomId());
 
             if (queryDto.getSeatId() != null && !queryDto.getSeatId().trim().isEmpty()) {
                 wrapper.eq("seatID", queryDto.getSeatId());
-                System.out.println("SQL条件4: seatID = " + queryDto.getSeatId());
             }
         }
 
         // 研讨室条件
         if (queryDto.getSeminarRoomId() != null && !queryDto.getSeminarRoomId().trim().isEmpty()) {
             wrapper.eq("seminarRoomID", queryDto.getSeminarRoomId());
-            System.out.println("SQL条件5: seminarRoomID = " + queryDto.getSeminarRoomId());
         }
 
         // 排序
@@ -364,13 +352,6 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         try {
             // 获取SQL语句的另一种方式
             String sql = wrapper.getSqlSegment();
-            System.out.println("SQL片段: " + sql);
-
-            // 打印Wrapper的所有条件
-            System.out.println("Wrapper条件表达式: " + wrapper.getExpression());
-
-            // 打印Wrapper参数
-            System.out.println("Wrapper参数: " + wrapper.getParamNameValuePairs());
         } catch (Exception e) {
             System.out.println("获取SQL信息失败: " + e.getMessage());
         }
@@ -384,14 +365,6 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
             System.out.println("查询到的记录:");
             for (int i = 0; i < result.size(); i++) {
                 ReservationRecord record = result.get(i);
-                System.out.println("记录 " + (i+1) + ":");
-                System.out.println("  studyRoomID: " + record.getStudyRoomID());
-                System.out.println("  seatID: " + record.getSeatID());
-                System.out.println("  seminarRoomID: " + record.getSeminarRoomID());
-                System.out.println("  reservationStartTime: " + record.getReservationStartTime());
-                System.out.println("  reservationEndTime: " + record.getReservationEndTime());
-                System.out.println("  reservationRecordStatus: " + record.getReservationRecordStatus());
-                System.out.println("---");
             }
         } else {
             System.out.println("未查询到任何记录");

@@ -9,6 +9,9 @@ import com.nbucs.studyroombackend.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,7 +53,7 @@ public class FeedBackServiceImpl implements FeedBackService {
 
         // 设置默认值
         if (feedback.getProcessStatus() == null) {
-            feedback.setProcessStatus(0); // 待处理
+            feedback.setProcessStatus(1); // 待处理
         }
 
         if (feedback.getFeedbackTime() == null) {
@@ -153,6 +156,36 @@ public class FeedBackServiceImpl implements FeedBackService {
 
         return feedbacks;
     }
+
+    @Override
+    public IPage<FeedBack> getStudentFeedbackPage(Integer studentId,
+                                                  Integer processStatus,
+                                                  Integer feedbackType,
+                                                  String keyword,
+                                                  Integer page,
+                                                  Integer size) {
+        if (studentId == null) {
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        QueryWrapper<FeedBack> qw = new QueryWrapper<>();
+        qw.eq("studentID", studentId);
+
+        if (processStatus != null) {
+            qw.eq("processStatus", processStatus);
+        }
+        if (feedbackType != null) {
+            qw.eq("feedbackType", feedbackType);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            qw.like("feedbackContent", keyword.trim());
+        }
+
+        qw.orderByDesc("feedbackTime");
+
+        return feedBackMapper.selectPage(new Page<>(page, size), qw);
+    }
+
 
     @Override
     public boolean updateFeedbackStatus(String feedbackId, Integer newStatus) {

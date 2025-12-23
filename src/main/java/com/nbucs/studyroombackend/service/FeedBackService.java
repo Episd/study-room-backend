@@ -1,5 +1,5 @@
 package com.nbucs.studyroombackend.service;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nbucs.studyroombackend.entity.FeedBack;
 
 import java.time.LocalDateTime;
@@ -49,4 +49,13 @@ public interface FeedBackService {
      * @return 反馈记录列表
      */
     List<FeedBack> getTimeFeedbacks(LocalDateTime startTime, LocalDateTime endTime);
+
+    /** 支持筛选 + 分页：获取学生反馈 */
+    IPage<FeedBack> getStudentFeedbackPage(Integer studentId,
+                                           Integer processStatus,
+                                           Integer feedbackType,
+                                           String keyword,
+                                           Integer page,
+                                           Integer size);
+
 }

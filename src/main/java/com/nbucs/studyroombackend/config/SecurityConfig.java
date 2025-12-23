@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/wait/**").permitAll()
                         .requestMatchers("/api/notification/**").permitAll()
                         .requestMatchers("/api/seminar-room/**").permitAll()
+                        .requestMatchers("/api/feedback/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

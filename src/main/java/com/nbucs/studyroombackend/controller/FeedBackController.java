@@ -6,6 +6,8 @@ import com.nbucs.studyroombackend.service.FeedBackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -130,23 +132,33 @@ public class FeedBackController {
      * GET /api/feedback/student
      */
     @GetMapping("/student")
-    public Response<?> getStudentFeedbacks(@RequestParam Integer studentId) {
+    public Response<?> getStudentFeedbacks(
+            @RequestParam Integer studentId,
+            @RequestParam(required = false) Integer processStatus,
+            @RequestParam(required = false) Integer feedbackType,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
+    ) {
         try {
             if (studentId == null) {
                 return Response.error(400, "学生ID不能为空");
             }
 
-            System.out.println("获取学生反馈记录请求：学生ID=" + studentId);
+            System.out.println("获取学生反馈记录请求：studentId=" + studentId
+                    + ", processStatus=" + processStatus
+                    + ", feedbackType=" + feedbackType
+                    + ", keyword=" + keyword
+                    + ", page=" + page
+                    + ", size=" + size);
 
-            List<FeedBack> feedbacks = feedbackService.getStudentFeedbacks(studentId);
-
-            if (feedbacks == null || feedbacks.isEmpty()) {
-                return Response.success("该学生暂无反馈记录", null);
-            }
+            IPage<FeedBack> pageData = feedbackService.getStudentFeedbackPage(
+                    studentId, processStatus, feedbackType, keyword, page, size
+            );
 
             Map<String, Object> result = new HashMap<>();
-            result.put("total", feedbacks.size());
-            result.put("feedbacks", feedbacks);
+            result.put("total", pageData.getTotal());
+            result.put("feedbacks", pageData.getRecords());
 
             return Response.success("查询成功", result);
 
@@ -155,6 +167,7 @@ public class FeedBackController {
             return Response.error(500, "查询失败，请稍后重试");
         }
     }
+
 
     /**
      * 获取管理员负责的所有反馈记录

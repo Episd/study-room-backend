@@ -424,4 +424,47 @@ public class ViolationServiceImpl implements ViolationService {
         int result = violationRecordMapper.update(null, updateWrapper);
         return result;
     }
+
+    @Override
+    @Transactional
+    public boolean deleteViolationRecord(String violationRecordId){
+        if(violationRecordId == null || violationRecordId.trim().isEmpty()){
+            throw new IllegalArgumentException("违规记录ID不能为空");
+        }
+
+        try{
+            int result = violationRecordMapper.deleteById(violationRecordId);
+
+            if(result > 0){
+                System.out.println("删除违规记录成功，违规ID："+violationRecordId);
+                return true;
+            } else {
+                System.out.println(("违规记录删除失败，违规ID："+violationRecordId));
+                return false;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("删除违规失败："+e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public int deleteViolationRecordByStudentId(Integer studentId){
+        if(studentId == null){
+            throw new IllegalArgumentException("学生ID不能为空");
+        }
+
+        try{
+            QueryWrapper<ViolationRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("studentID", studentId);
+
+            int result = violationRecordMapper.delete(queryWrapper);
+
+            System.out.println("删除学生[" + studentId + "]的所有违规，成功删除" + result+ "条");
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("删除学生违规记录失败："+e.getMessage(), e);
+        }
+    }
 }

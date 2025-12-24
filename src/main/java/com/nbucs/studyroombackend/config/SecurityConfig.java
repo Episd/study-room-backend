@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/notification/**").permitAll()
                         .requestMatchers("/api/seminar-room/**").permitAll()
                         .requestMatchers("/api/feedback/**").permitAll()
+                        .requestMatchers("/api/student/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

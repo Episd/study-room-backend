@@ -24,8 +24,8 @@ public class SeminarRoomController {
         System.out.println("添加研讨室请求：" + seminarRoom);
 
         try {
-            boolean result = seminarRoomService.addSeminarRoom(seminarRoom);
-            return result ? Response.success("添加成功", seminarRoom) : Response.error(304, "添加失败");
+            seminarRoomService.addSeminarRoom(seminarRoom);
+            return Response.success("添加成功", seminarRoom);
         } catch (Exception e) {
             System.err.println("添加研讨室失败: " + e.getMessage());
             return Response.error(304, "添加失败: " + e.getMessage());
@@ -42,8 +42,8 @@ public class SeminarRoomController {
         System.out.println("更新研讨室请求：" + seminarRoom);
 
         try {
-            boolean result = seminarRoomService.updateSeminarRoom(seminarRoom);
-            return result ? Response.success("更新成功", seminarRoom) : Response.error(304, "更新失败");
+            seminarRoomService.updateSeminarRoom(seminarRoom);
+            return Response.success("更新成功", seminarRoom);
         } catch (Exception e) {
             System.err.println("更新研讨室失败: " + e.getMessage());
             return Response.error(304, "更新失败: " + e.getMessage());

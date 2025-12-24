@@ -19,12 +19,6 @@ public class SeatManageController {
     public Response<List<Seat>> getSeatByRoomID(@PathVariable Long roomID) {
         return Response.success("获取座位成功", seatService.getSeatsByStudyRoom(roomID));
     }
-
-    @GetMapping("/getSeatByRoomID")
-    public Response<List<Seat>> getSeatByRoomID(@RequestParam Long roomID) {
-        return Response.success("获取座位成功", seatService.getSeatsByStudyRoom(roomID));
-    }
-
     // 获取指定座位的状态
     @GetMapping("/seat")
     public Response<Seat> getSeatById(@RequestParam Long seatID) {

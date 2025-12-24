@@ -77,7 +77,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
 
         // 验证所有记录的基本信息
-        Long seminarRoomId = firstRecord.getStudyRoomID();
+        Long seminarRoomId = firstRecord.getSeminarRoomID();
         LocalDateTime startTime = firstRecord.getReservationStartTime();
         LocalDateTime endTime = firstRecord.getReservationEndTime();
 
@@ -96,7 +96,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
             }
 
             // 验证是否是同一个研讨室
-            if (!record.getStudyRoomID().equals(seminarRoomId)) {
+            if (!record.getSeminarRoomID().equals(seminarRoomId)) {
                 throw new IllegalArgumentException("所有预约必须是同一个研讨室");
             }
         }

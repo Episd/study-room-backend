@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.nbucs.studyroombackend.entity.StudentUser;
+import com.nbucs.studyroombackend.exception.ServiceException;
 import com.nbucs.studyroombackend.mapper.StudentMapper;
 import com.nbucs.studyroombackend.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public boolean modifySelfInformation(StudentUser student) {
-        return false;
+        if (student.getStudentID() == null) {
+            throw new ServiceException(500, "学生ID为空");
+        }
+        int rows = studentMapper.updateById(student);
+        return rows > 0;
     }
 
     @Override

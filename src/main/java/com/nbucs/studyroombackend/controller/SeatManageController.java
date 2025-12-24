@@ -4,12 +4,10 @@ import com.nbucs.studyroombackend.dto.response.Response;
 import com.nbucs.studyroombackend.entity.Seat;
 import com.nbucs.studyroombackend.service.SeatService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/seatManage")
@@ -17,18 +15,9 @@ public class SeatManageController {
     @Autowired
     private SeatService seatService;
 
-
-/**
- * 获取所有座位信息的接口方法
- * 使用GET方式请求/seats路径
- *
- * @return 返回一个Response对象，包含状态信息、消息和所有座位列表数据
- */
-    @GetMapping("/seats")
-    public Response<List<Seat>> getAllSeats() {
-    // 调用studyRoomService中的getAllSeats方法获取所有座位信息
-    // 并将结果封装到Response对象中返回给前端
-        return Response.success("获取所有座位成功", seatService.getAllSeats());
+    @GetMapping("/seats/{roomID}")
+    public Response<List<Seat>> getSeatByRoomID(@PathVariable Long roomID) {
+        return Response.success("获取座位成功", seatService.getSeatsByStudyRoom(roomID));
     }
 
     @GetMapping("/getSeatByRoomID")
@@ -42,5 +31,17 @@ public class SeatManageController {
         // 调用服务层查询座位
         Seat seat = seatService.getSeatById(seatID);
         return Response.success("获取座位成功", seat);
+    }
+
+    @PutMapping("/updateSeat/{seatID}")
+    public Response<Seat> updateSeat(@PathVariable Long seatID, @RequestBody Map<String, String> body) {
+        Seat seat = new Seat();
+        seat.setSeatID(seatID);
+        return Response.success("更新座位成功", seatService.updateSeat(seat));
+    }
+
+    @PutMapping("/saveSeats/{roomID}")
+    public Response<?> saveSeats(@PathVariable Long roomID, @RequestBody List<Seat> seats) {
+        return Response.success("保存座位成功", seatService.updateSeats(roomID, seats));
     }
 }

@@ -13,7 +13,9 @@ public interface SeatService {
     /**
      * 更新座位信息
      */
-    boolean updateSeat(Seat seat);
+    Seat updateSeat(Seat seat);
+
+    List<Seat> updateSeats(Long roomID, List<Seat> list);
 
     /**
      * 删除座位

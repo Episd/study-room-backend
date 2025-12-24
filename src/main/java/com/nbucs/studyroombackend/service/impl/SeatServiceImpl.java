@@ -2,6 +2,7 @@ package com.nbucs.studyroombackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.nbucs.studyroombackend.entity.Seat;
+import com.nbucs.studyroombackend.exception.ServiceException;
 import com.nbucs.studyroombackend.mapper.SeatMapper;
 import com.nbucs.studyroombackend.service.SeatService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +82,7 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    public boolean updateSeat(Seat seat) {
+    public Seat updateSeat(Seat seat) {
         // 1. 参数验证
         if (seat == null || seat.getSeatID() == null) {
             throw new IllegalArgumentException("座位ID不能为空");
@@ -105,7 +106,18 @@ public class SeatServiceImpl implements SeatService {
 
         // 5. 更新数据库（只更新非null字段）
         int result = seatMapper.updateById(seat);
-        return result > 0;
+        if(result <= 0) {
+            throw new ServiceException(500, "更新座位失败");
+        }
+        return seat;
+    }
+
+    @Override
+    public List<Seat> updateSeats(Long roomID, List<Seat> list) {
+        for (Seat seat : list) {
+            updateSeat(seat);
+        }
+        return list;
     }
 
     @Override
@@ -201,7 +213,9 @@ public class SeatServiceImpl implements SeatService {
         seat.setSeatID(seatId);
         seat.setSeatStatus(status);
 
-        return updateSeat(seat);
+        updateSeat(seat);
+
+        return true;
     }
 
     @Override

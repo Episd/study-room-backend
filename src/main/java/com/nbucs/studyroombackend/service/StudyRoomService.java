@@ -9,9 +9,9 @@ public interface StudyRoomService {
     List<StudyRoom> getAllRooms();
     List<StudyRoom> getRooms(StudyRoom room);
     // 添加自习室
-    boolean addRoom(StudyRoom room);
+    StudyRoom addRoom(StudyRoom room);
     // 修改自习室信息
-    boolean updateRoom(StudyRoom room);
+    StudyRoom updateRoom(StudyRoom room);
     // 删除自习室
     boolean deleteRoom(StudyRoom room);
 }

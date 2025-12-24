@@ -78,6 +78,7 @@ public class AuthController {
     @PostMapping("/loginAdminById")
     public Response<?> loginAdminById(@RequestBody AuthDto loginForm) {
         Integer id = loginForm.getId();
+        System.out.println("收到管理员登录请求：ID：" + id);
         String password = loginForm.getPassword();
 
         System.out.println("收到管理员登录请求：ID：" + id + "，密码：" + password);

@@ -200,6 +200,29 @@ public class FeedBackController {
         }
     }
 
+    @GetMapping("/status")
+    public Response<?> getFeedbackByStatus(@RequestParam Integer processStatus) {
+        try{
+            if (processStatus == null) {
+                return Response.error(400,"反馈状态不能为空");
+            }
+
+            List<FeedBack> feedBacks = feedbackService.queryFeedBacks(processStatus);
+
+            if (feedBacks == null || feedBacks.isEmpty()) {
+                return Response.success("无该状态反馈记录", null);
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("total", feedBacks.size());
+            result.put("feedbacks", feedBacks);
+
+            return Response.success("查询成功", result);
+        } catch (Exception e) {
+            return Response.error(500,"查询失败，请稍后重试");
+        }
+    }
+
     /**
      * 根据时间范围查询反馈记录
      * GET /api/feedback/time-range

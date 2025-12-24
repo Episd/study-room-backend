@@ -3,6 +3,7 @@ package com.nbucs.studyroombackend.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.nbucs.studyroombackend.entity.FeedBack;
 import com.nbucs.studyroombackend.entity.Notification;
+import com.nbucs.studyroombackend.entity.ViolationRecord;
 import com.nbucs.studyroombackend.mapper.FeedBackMapper;
 import com.nbucs.studyroombackend.service.FeedBackService;
 import com.nbucs.studyroombackend.service.NotificationService;
@@ -334,5 +335,16 @@ public class FeedBackServiceImpl implements FeedBackService {
         return "FB" + datePart + sequencePart;
     }
 
+    @Override
+    public List<FeedBack> queryFeedBacks(Integer processStatus){
+        QueryWrapper<FeedBack> queryWrapper = new QueryWrapper<>();
+
+        // 按创建时间倒序排列
+        queryWrapper.orderByDesc("feedbackTime");
+        if (processStatus != null) {
+            queryWrapper.eq("processStatus", processStatus);
+        }
+        return feedBackMapper.selectList(queryWrapper);
+    }
 
 }

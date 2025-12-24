@@ -278,7 +278,7 @@ public class ViolationController {
     }
 
     /**
-     * 删除学生的所有通知
+     * 删除学生的所有违规
      */
     @DeleteMapping("/student")
     public Response<?> deleteViolationRecordByStudentId(@RequestBody Integer studentId) {

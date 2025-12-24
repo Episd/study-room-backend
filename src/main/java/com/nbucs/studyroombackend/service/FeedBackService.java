@@ -50,6 +50,13 @@ public interface FeedBackService {
      */
     List<FeedBack> getTimeFeedbacks(LocalDateTime startTime, LocalDateTime endTime);
 
+    /**
+     * 状态查询
+     * @param processStatus  状态
+     * @return  结果
+     */
+    List<FeedBack> queryFeedBacks(Integer processStatus);
+
     /** 支持筛选 + 分页：获取学生反馈 */
     IPage<FeedBack> getStudentFeedbackPage(Integer studentId,
                                            Integer processStatus,

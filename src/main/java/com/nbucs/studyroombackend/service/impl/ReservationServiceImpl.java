@@ -32,9 +32,7 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
     @Override
     public ReservationRecord reserveSeat(ReservationRecord reservationRecord) {
         // 1. 检查时间段冲突 - 基于预约记录
-        if (checkTimeConflict(reservationRecord)) {
-            throw new RuntimeException("该时间段已被预约");
-        }
+        checkTimeConflict(reservationRecord);
 
         // 2. 检查座位是否存在（不检查座位状态，因为状态可能滞后）
         Seat seat = seatService.getSeatById(reservationRecord.getSeatID());
@@ -139,8 +137,16 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         // 1. 检查个人时间冲突（学生不能在同一时间段预约多个）
         boolean personalConflict = checkPersonalTimeConflict(reservationRecord);
 
+        if (personalConflict){
+            throw new RuntimeException("同一时间段不可多次预约");
+        }
+
         // 2. 检查资源时间冲突（座位/研讨室不能在同一时间段被预约多次）
         boolean resourceConflict = checkResourceTimeConflict(reservationRecord);
+
+        if (resourceConflict){
+            throw new RuntimeException("该座位/研讨室已被预约");
+        }
 
         return personalConflict || resourceConflict;
     }

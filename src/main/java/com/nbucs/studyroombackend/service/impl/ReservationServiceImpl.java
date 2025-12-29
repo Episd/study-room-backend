@@ -8,9 +8,12 @@ import com.nbucs.studyroombackend.mapper.ReservationRecordMapper;
 import com.nbucs.studyroombackend.service.ReservationService;
 import com.nbucs.studyroombackend.service.SeatService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,6 +57,12 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         int insertResult = reservationRecordMapper.insert(reservationRecord);
         if (insertResult <= 0) {
             throw new RuntimeException("预约保存失败");
+        }
+
+        // ✅ 在这里检查未来3周是否都占用，若是就更新 seat 状态
+        boolean full = areNext3WeeksOccupied(reservationRecord.getSeatID(), reservationRecord.getStudyRoomID());
+        if (full) {
+            // seatService.updateSeatStatus(...)
         }
 
         return reservationRecord;
@@ -437,6 +446,44 @@ public class ReservationServiceImpl implements ReservationService {  // 移除 a
         }
 
         return reservationRecordMapper.selectList(queryWrapper);
+    }
+
+    /*判断考研座位占用情况*/
+    private LocalDate getThisMonday(LocalDate today) {
+        return today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    }
+
+    private LocalDate getFirstSelectableMonday() {
+        LocalDate today = LocalDate.now();
+        LocalDate thisMonday = getThisMonday(today);
+        LocalDate thisSunday = thisMonday.plusDays(6);
+
+        LocalDateTime cutoff = thisSunday.atTime(22, 0); // 本周周日 22:00
+
+        // 周日22:00前：可约下周；周日22:00后：可约下下周
+        if (LocalDateTime.now().isBefore(cutoff)) {
+            return thisMonday.plusWeeks(1);
+        } else {
+            return thisMonday.plusWeeks(2);
+        }
+    }
+
+    public boolean areNext3WeeksOccupied(Long seatId, Long studyRoomId) {
+        LocalDate firstMonday = getFirstSelectableMonday();
+
+        for (int i = 0; i < 3; i++) {
+            LocalDate weekStartDate = firstMonday.plusWeeks(i);
+            LocalDate weekEndDate = weekStartDate.plusDays(6);
+
+            LocalDateTime weekStart = weekStartDate.atStartOfDay();              // 周一 00:00
+            LocalDateTime weekEnd = weekEndDate.atTime(23, 59, 59);             // 周日 23:59:59
+
+            Integer cnt = reservationRecordMapper.countOverlap(seatId, studyRoomId, weekStart, weekEnd);
+            if (cnt == null || cnt <= 0) {
+                return false; // 有一周没被占用 => 没满
+            }
+        }
+        return true; // 3周都有占用
     }
 
 }

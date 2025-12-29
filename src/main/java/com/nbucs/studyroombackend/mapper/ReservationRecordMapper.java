@@ -38,4 +38,25 @@ public interface ReservationRecordMapper extends BaseMapper<ReservationRecord> {
             "LIMIT 1")
     ReservationRecord selectEarliestTodayReservation(@Param("studentId") String studentId);
 
+    /**
+     * 统计某个座位在指定时间区间内是否存在预约（区间重叠即算占用）
+     * overlap 条件：已有.start <= queryEnd && 已有.end >= queryStart
+     */
+    @Select("""
+    SELECT COUNT(1)
+    FROM reservationrecord
+    WHERE seatID = #{seatId}
+      AND studyRoomID = #{studyRoomId}
+      AND reservationRecordStatus IN (0, 1, 2)
+      AND reservationStartTime <= #{endTime}
+      AND reservationEndTime >= #{startTime}
+""")
+    Integer countOverlap(
+            @Param("seatId") Long seatId,
+            @Param("studyRoomId") Long studyRoomId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+
+
 }

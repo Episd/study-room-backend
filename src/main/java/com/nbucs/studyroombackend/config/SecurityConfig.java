@@ -18,7 +18,8 @@ public class SecurityConfig {
                 // 启用 CORS
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173","http://119.3.160.109:5173"));
+                    // 测试建议先用通配符（注意：使用 allowCredentials(true) 时，不能用 "*"，建议手动添加实际域名）
+                    config.setAllowedOriginPatterns(List.of("*"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
